@@ -43,102 +43,124 @@ typedef struct Man_t {
 	double head_x, head_y, head_z, head_radius;
 	Bone* bones[MAX_NUMBER_OF_BONES];
 	int velocity;
+	int running_phase;
 } Man;
 
-Man* runers[MAX_NUMBER_OF_RUNERS];
+Man* runners[MAX_NUMBER_OF_RUNERS];
 
 int animation;
 
-
+void running();
 void walking();
-void init_runers();
-void draw_runer(Man* runer);
+void init_runners();
+void draw_runner(Man* runner);
 
-void init_tree(Man* runer, double x, double y, double z);
+void init_tree(Man* runner, double x, double y, double z);
 Bone* bone_add_child(Bone* root, double x, double y, double z, double a, double l);
 void swap_min_max(Bone* root);
 void free_bones(Bone* root);
-void free_runers();
+void free_runners();
 
 void draw_bone(Bone* root);
 void draw_circle(double x, double y, double z, double radius);
 void calculate_angles(int velocity, Bone* root);
 
 void free_bones(Bone* root);
-void free_runers();
+void free_runners();
 
 void write_bone(Bone* b);
 void write_tree(Bone* root);
 
-void init_runers() {
+void init_runners() {
 	animation = START;
 	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
-		runers[i] = (Man*)malloc(sizeof(Man));
-		runers[i] -> velocity = MAX_NUMBER_OF_FRAMES;
+		runners[i] = (Man*)malloc(sizeof(Man));
+		runners[i] -> velocity = MAX_NUMBER_OF_FRAMES;
 	}
 
 	int shift = 5;
 	int track = 37;
 	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
-		init_tree(runers[i], 15, 8, track);
+		init_tree(runners[i], 15, 8, track);
 		track = track + shift;
 	}
 }
 
-void walking() {
+void running() {
 	if (animation == STOP) return;
+	walking();
+	int side = 0;
 	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
-		calculate_angles(runers[i] -> velocity, runers[i] -> tree_root);
-		printf("%d \t", i);
-		write_bone(runers[i] -> bones[HEAD]);
-		write_bone(runers[i] -> bones[HEAD]);
+		if (side == 0 && runners[i] -> bones[HEAD] -> coord_x < 100) {
+			runners[i] -> bones[HEAD] -> coord_x += 1;
+			runners[i] -> head_x += 1;
+		} else if (side == 0 && runners[i] -> bones[HEAD] -> coord_x >= 100) {
+			side = 1;
+			runners[i] -> bones[HEAD] -> coord_x -= 1;
+			runners[i] -> head_x -= 1;
+		} else if (side == 1 && runners[i] -> bones[HEAD] -> coord_x > -100) {
+			runners[i] -> bones[HEAD] -> coord_x -= 1;
+			runners[i] -> head_x -= 1;
+		} else if (side == 1 && runners[i] -> bones[HEAD] -> coord_x <= -100) {
+			side = 0;
+			runners[i] -> bones[HEAD] -> coord_x += 1;
+			runners[i] -> head_x += 1;
+		}
 	}
+
 	glutPostRedisplay();
-	if (animation != ON_KEY) glutTimerFunc(100, walking, 0);
+	if (animation != ON_KEY) glutTimerFunc(100, running, 0);
 }
 
-void init_tree(Man* runer, double x, double y, double z) {
-	runer -> head_x = x;
-	runer -> head_y = y;
-	runer -> head_z = z;
-	runer -> head_radius = 0.8;
+void walking() {
 
-	runer -> bones[HEAD] = bone_add_child(runer -> tree_root,	 	x, 	y, 	z, 	-90, 	0.5);
-	runer -> bones[HEAD] -> max_angle = -90;
+	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
+		calculate_angles(runners[i] -> velocity, runners[i] -> tree_root);
+	}
+}
 
-	runer -> bones[BACK] = bone_add_child(runer -> bones[HEAD], 		0, 	0, 	0, 	0, 	3);
-	runer -> bones[BACK] -> max_angle = 0;
+void init_tree(Man* runner, double x, double y, double z) {
+	runner -> head_x = x;
+	runner -> head_y = y;
+	runner -> head_z = z;
+	runner -> head_radius = 0.8;
 
-	runer -> bones[LEG_LEFT] = bone_add_child(runer -> bones[BACK], 	0, 	0, 	0, 	30, 	2);
-	runer -> bones[LEG_LEFT] -> max_angle = -15;
-	runer -> bones[ANKLE_LEFT] = bone_add_child(runer -> bones[LEG_LEFT], 	0, 	0, 	0, 	0, 	2);
-	runer -> bones[ANKLE_LEFT] -> max_angle = -30;
-	runer -> bones[FOOT_LEFT] = bone_add_child(runer -> bones[ANKLE_LEFT], 	0, 	0, 	0, 	90, 	0.5);
-	runer -> bones[FOOT_LEFT] -> max_angle = 90;
-	runer -> bones[TOES_LEFT] = bone_add_child(runer -> bones[FOOT_LEFT], 	0, 	0, 	0, 	0, 	0.1);
-	runer -> bones[TOES_LEFT] -> max_angle = 45;
+	runner -> bones[HEAD] = bone_add_child(runner -> tree_root,	 	x, 	y, 	z, 	-90, 	0.5);
+	runner -> bones[HEAD] -> max_angle = -90;
 
-	runer -> bones[LEG_RIGHT] = bone_add_child(runer -> bones[BACK], 	0, 	0, 	0, 	-15, 	2);
-	runer -> bones[LEG_RIGHT] -> max_angle = 30;
-	runer -> bones[ANKLE_RIGHT] = bone_add_child(runer -> bones[LEG_RIGHT], 0, 	0, 	0, 	-30, 	2);
-	runer -> bones[ANKLE_RIGHT] -> max_angle = 0;
-	runer -> bones[FOOT_RIGHT] = bone_add_child(runer -> bones[ANKLE_RIGHT],0, 	0, 	0, 	90, 	0.5);
-	runer -> bones[FOOT_RIGHT] -> max_angle = 90;
-	runer -> bones[TOES_RIGHT] = bone_add_child(runer -> bones[FOOT_RIGHT], 0, 	0, 	0, 	45, 	0.1);
-	runer -> bones[TOES_RIGHT] -> max_angle = 0;
+	runner -> bones[BACK] = bone_add_child(runner -> bones[HEAD], 		0, 	0, 	0, 	0, 	3);
+	runner -> bones[BACK] -> max_angle = 0;
 
-	runer -> bones[ARM_LEFT] = bone_add_child(runer -> bones[HEAD], 	0, 	0, 	0, 	-45, 	1.5);
-	runer -> bones[ARM_LEFT] -> max_angle = 45;
-	runer -> bones[FOREARM_LEFT] = bone_add_child(runer -> bones[ARM_LEFT], 0, 	0, 	0, 	100, 	1.5);
-	runer -> bones[FOREARM_LEFT] -> max_angle = 100;
+	runner -> bones[LEG_LEFT] = bone_add_child(runner -> bones[BACK], 	0, 	0, 	0, 	30, 	2);
+	runner -> bones[LEG_LEFT] -> max_angle = -15;
+	runner -> bones[ANKLE_LEFT] = bone_add_child(runner -> bones[LEG_LEFT], 	0, 	0, 	0, 	0, 	2);
+	runner -> bones[ANKLE_LEFT] -> max_angle = -30;
+	runner -> bones[FOOT_LEFT] = bone_add_child(runner -> bones[ANKLE_LEFT], 	0, 	0, 	0, 	90, 	0.5);
+	runner -> bones[FOOT_LEFT] -> max_angle = 90;
+	runner -> bones[TOES_LEFT] = bone_add_child(runner -> bones[FOOT_LEFT], 	0, 	0, 	0, 	0, 	0.1);
+	runner -> bones[TOES_LEFT] -> max_angle = 45;
 
-	runer -> bones[ARM_RIGHT] = bone_add_child(runer -> bones[HEAD], 	0, 	0, 	0, 	45, 	1.5);
-	runer -> bones[ARM_RIGHT] -> max_angle = -45;
-	runer -> bones[FOREARM_RIGHT] = bone_add_child(runer -> bones[ARM_RIGHT],0, 	0, 	0, 	100, 	1.5);
-	runer -> bones[FOREARM_RIGHT] -> max_angle = 100;
+	runner -> bones[LEG_RIGHT] = bone_add_child(runner -> bones[BACK], 	0, 	0, 	0, 	-15, 	2);
+	runner -> bones[LEG_RIGHT] -> max_angle = 30;
+	runner -> bones[ANKLE_RIGHT] = bone_add_child(runner -> bones[LEG_RIGHT], 0, 	0, 	0, 	-30, 	2);
+	runner -> bones[ANKLE_RIGHT] -> max_angle = 0;
+	runner -> bones[FOOT_RIGHT] = bone_add_child(runner -> bones[ANKLE_RIGHT],0, 	0, 	0, 	90, 	0.5);
+	runner -> bones[FOOT_RIGHT] -> max_angle = 90;
+	runner -> bones[TOES_RIGHT] = bone_add_child(runner -> bones[FOOT_RIGHT], 0, 	0, 	0, 	45, 	0.1);
+	runner -> bones[TOES_RIGHT] -> max_angle = 0;
 
-	swap_min_max(runer -> bones[HEAD]);
-	runer -> tree_root = runer -> bones[HEAD];
+	runner -> bones[ARM_LEFT] = bone_add_child(runner -> bones[HEAD], 	0, 	0, 	0, 	-45, 	1.5);
+	runner -> bones[ARM_LEFT] -> max_angle = 45;
+	runner -> bones[FOREARM_LEFT] = bone_add_child(runner -> bones[ARM_LEFT], 0, 	0, 	0, 	100, 	1.5);
+	runner -> bones[FOREARM_LEFT] -> max_angle = 100;
+
+	runner -> bones[ARM_RIGHT] = bone_add_child(runner -> bones[HEAD], 	0, 	0, 	0, 	45, 	1.5);
+	runner -> bones[ARM_RIGHT] -> max_angle = -45;
+	runner -> bones[FOREARM_RIGHT] = bone_add_child(runner -> bones[ARM_RIGHT],0, 	0, 	0, 	100, 	1.5);
+	runner -> bones[FOREARM_RIGHT] -> max_angle = 100;
+
+	swap_min_max(runner -> bones[HEAD]);
+	runner -> tree_root = runner -> bones[HEAD];
 }
 
 void calculate_angles(int velocity, Bone* root) {
@@ -194,9 +216,9 @@ Bone* bone_add_child(Bone* root, double x, double y, double z, double a, double 
 	return root;
 }
 
-void draw_runer(Man* runer) {
-	draw_circle(runer -> head_x, runer -> head_y, runer -> head_z, runer -> head_radius);
-	draw_bone(runer -> tree_root);
+void draw_runner(Man* runner) {
+	draw_circle(runner -> head_x, runner -> head_y, runner -> head_z, runner -> head_radius);
+	draw_bone(runner -> tree_root);
 }
 
 void draw_bone(Bone* root) {
@@ -261,9 +283,9 @@ void free_bones(Bone* root) {
 	}
 }
 
-void free_runers() {
+void free_runners() {
 	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
-		free_bones(runers[i] -> bones[HEAD]);
+		free_bones(runners[i] -> bones[HEAD]);
 	}
 }
 

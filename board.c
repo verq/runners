@@ -25,8 +25,9 @@ void draw_board();
 void draw_track(double value, int filled);
 
 int main(int argc, char **argv) {
-	init_runers();
+	init_runners();
 	init_eyes();
+
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
 	glutInitWindowSize(800, 600);
@@ -35,10 +36,11 @@ int main(int argc, char **argv) {
 	glutReshapeFunc(reshape);
 	glutKeyboardFunc(keyboard);
 	glutSpecialFunc(keyboard_special);
-walking();
+
+	running();
 	glutMainLoop();
 
-	free_runers();
+	free_runners();
  	return 0;
 }
 
@@ -135,7 +137,7 @@ void display() {
 	glEnd();
 
 	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
-		if (runers[i] -> tree_root != NULL) draw_runer(runers[i]);
+		if (runners[i] -> tree_root != NULL) draw_runner(runners[i]);
 	}
 
 	glPushMatrix();

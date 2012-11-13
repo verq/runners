@@ -21,11 +21,12 @@ typedef struct Man_t {
 	int velocity;
 } Man;
 
-Man* runers[MAX_NUMBER_OF_RUNERS];
+Man* runners[MAX_NUMBER_OF_RUNERS];
 
-void init_runers();
+void init_runners();
 void walking();
-void draw_runer(Man* runer);
+void running();
+void draw_runner(Man* runner);
 
-void free_runers();
+void free_runners();
 #endif
