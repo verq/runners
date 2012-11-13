@@ -6,13 +6,19 @@
 
 #define PI 			3.1415926535897
 #define MAX_NUMBER_OF_CHILDREN 	3
-#define MAX_NUMBER_OF_FRAMES 	8.0
+#define MAX_NUMBER_OF_FRAMES 	20.0
 #define MAX_NUMBER_OF_BONES 	15
 #define MAX_NUMBER_OF_RUNERS	8
 
 #define STOP 		0
 #define START 		1
 #define ON_KEY 		2
+
+#define FORWARD		0
+#define FORWARD_TURN	1
+#define BACKWARD	2
+#define BACKWARD_TURN	3
+#define POSITIONS	4
 
 #define HEAD 		0
 #define BACK 		1
@@ -44,6 +50,8 @@ typedef struct Man_t {
 	Bone* bones[MAX_NUMBER_OF_BONES];
 	int velocity;
 	int running_phase;
+	int number;
+	double positions[POSITIONS];
 } Man;
 
 Man* runners[MAX_NUMBER_OF_RUNERS];
@@ -54,6 +62,11 @@ void running();
 void walking();
 void init_runners();
 void draw_runner(Man* runner);
+
+void forward(Man* runner);
+void forward_turn(Man* runner);
+void backward(Man* runner);
+void backward_turn(Man* runner);
 
 void init_tree(Man* runner, double x, double y, double z);
 Bone* bone_add_child(Bone* root, double x, double y, double z, double a, double l);
@@ -75,7 +88,7 @@ void init_runners() {
 	animation = START;
 	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
 		runners[i] = (Man*)malloc(sizeof(Man));
-		runners[i] -> velocity = MAX_NUMBER_OF_FRAMES;
+		runners[i] -> velocity = 5.0;
 	}
 
 	int shift = 5;
@@ -86,34 +99,62 @@ void init_runners() {
 	}
 }
 
+void forward(Man* runner) {
+	if (runner -> head_x < 100) {
+		runner -> bones[HEAD] -> coord_x += 1;
+		runner -> head_x += 1;
+	} else {
+		runner -> running_phase = FORWARD_TURN;
+		forward_turn(runner);
+	}
+}
+
+void backward(Man* runner) {
+	if (runner -> head_x > -100) {
+		runner -> bones[HEAD] -> coord_x -= runner -> velocity;
+		runner -> head_x -= runner -> velocity;
+	} else {
+		runner -> running_phase = BACKWARD_TURN;
+		backward_turn(runner);
+	}
+}
+
+void forward_turn(Man* runner) {
+	if (runner -> head_z > -100) {
+		runner -> bones[HEAD] -> coord_z -= runner -> velocity;
+		runner -> head_z -= runner -> velocity;
+	} else {
+		runner -> running_phase = BACKWARD;
+		backward(runner);
+	}
+}
+
+void backward_turn(Man* runner) {
+	if (runner -> head_z < 100) {
+		runner -> bones[HEAD] -> coord_z += runner -> velocity;
+		runner -> head_z += runner -> velocity;
+	} else {
+		runner -> running_phase = FORWARD;
+		forward(runner);
+	}
+}
+
 void running() {
 	if (animation == STOP) return;
 	walking();
-	int side = 0;
+
 	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
-		if (side == 0 && runners[i] -> bones[HEAD] -> coord_x < 100) {
-			runners[i] -> bones[HEAD] -> coord_x += 1;
-			runners[i] -> head_x += 1;
-		} else if (side == 0 && runners[i] -> bones[HEAD] -> coord_x >= 100) {
-			side = 1;
-			runners[i] -> bones[HEAD] -> coord_x -= 1;
-			runners[i] -> head_x -= 1;
-		} else if (side == 1 && runners[i] -> bones[HEAD] -> coord_x > -100) {
-			runners[i] -> bones[HEAD] -> coord_x -= 1;
-			runners[i] -> head_x -= 1;
-		} else if (side == 1 && runners[i] -> bones[HEAD] -> coord_x <= -100) {
-			side = 0;
-			runners[i] -> bones[HEAD] -> coord_x += 1;
-			runners[i] -> head_x += 1;
-		}
+		if (runners[i] -> running_phase == FORWARD) forward(runners[i]);
+		else if (runners[i] -> running_phase == FORWARD_TURN) forward_turn(runners[i]);
+		else if (runners[i] -> running_phase == BACKWARD) backward(runners[i]);
+		else if (runners[i] -> running_phase == BACKWARD_TURN) backward_turn(runners[i]);
 	}
 
 	glutPostRedisplay();
-	if (animation != ON_KEY) glutTimerFunc(100, running, 0);
+	glutTimerFunc(MAX_NUMBER_OF_FRAMES, running, 0);
 }
 
 void walking() {
-
 	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
 		calculate_angles(runners[i] -> velocity, runners[i] -> tree_root);
 	}
@@ -124,7 +165,8 @@ void init_tree(Man* runner, double x, double y, double z) {
 	runner -> head_y = y;
 	runner -> head_z = z;
 	runner -> head_radius = 0.8;
-
+	runner -> running_phase = FORWARD;
+	
 	runner -> bones[HEAD] = bone_add_child(runner -> tree_root,	 	x, 	y, 	z, 	-90, 	0.5);
 	runner -> bones[HEAD] -> max_angle = -90;
 
@@ -163,10 +205,10 @@ void init_tree(Man* runner, double x, double y, double z) {
 	runner -> tree_root = runner -> bones[HEAD];
 }
 
-void calculate_angles(int velocity, Bone* root) {
+void calculate_angles(int velocity, Bone* root) { //TODO velocity
 	if (root -> max_angle - root -> min_angle != 0) {
 
-		double temp = (abs(root -> max_angle) + abs(root -> min_angle)) / velocity;
+		double temp = (abs(root -> max_angle) + abs(root -> min_angle)) / MAX_NUMBER_OF_FRAMES;
 		if (root -> side == 0) {
 			if (root -> angle + temp < root -> max_angle) {
 				root -> angle = root -> angle + temp;
