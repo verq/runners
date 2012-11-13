@@ -58,8 +58,8 @@ void init_eyes() {
 
 void draw_track(double value, int filled) {
 	int number_of_segments = 100;
-	double y = 0;
-	double angle, x, y;
+	double z = 0;
+	double angle, x, z;
 
 	if (filled == UNFILLED) {
 		glBegin(GL_LINE_LOOP);		
