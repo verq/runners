@@ -45,13 +45,13 @@ walking();
 
 void init_eyes() {
 	eyex = 3;
-	eyey = 0;
-	eyez = 2;
+	eyey = 3;
+	eyez = -12;
 	centerx = 0;
 	centery = 0;
 	centerz = 1;
-	upx = 9;
-	upy = 0;
+	upx = 0;
+	upy = 1;
 	upz = 0;
 
 }
@@ -112,11 +112,8 @@ void display() {
 	
 	glLoadIdentity();
 	gluLookAt(eyex, eyey, eyez, centerx, centery, centerz, upx, upy, upz);
-	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
-		if (runers[i] -> tree_root != NULL) draw_runer(runers[i]);
-	}
 
-	//printf("%lf %lf %lf \t %lf %lf %lf \t %lf %lf %lf\n", eyex, eyey, eyez, centerx, centery, centerz, upx, upy, upz);
+	printf("%lf %lf %lf \t %lf %lf %lf \t %lf %lf %lf\n", eyex, eyey, eyez, centerx, centery, centerz, upx, upy, upz);
 	draw_board();
 
 	glBegin(GL_LINES);
@@ -137,6 +134,9 @@ void display() {
 	glVertex3f(0.0, 0.0, -100.0);
 	glEnd();
 
+	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
+		if (runers[i] -> tree_root != NULL) draw_runer(runers[i]);
+	}
 
 	glPushMatrix();
 
@@ -152,7 +152,7 @@ void reshape(int w, int h) {
 
 	if (w == 0) w = 1;
 	if (h == 0) h = 1;
-glOrtho( -100, 100, -100, 100, -100, 100);
+glOrtho( -128, 128, -128, 128, -128, 128);
 	//if (w < h) glFrustum(-1.0, 1.0, -1.0 * h / w, 1.0 * h / w, 1.0, 2.0);
 	//else glFrustum(-1.0 * w / h, 1.0 * w / h, -1.0, 1.0, 1.0, 2.0);
 	glPushMatrix();
