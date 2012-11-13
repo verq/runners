@@ -76,6 +76,7 @@ void init_runers() {
 		runers[i] = (Man*)malloc(sizeof(Man));
 		runers[i] -> velocity = MAX_NUMBER_OF_FRAMES;
 	}
+
 	int shift = 5;
 	int track = 37;
 	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
