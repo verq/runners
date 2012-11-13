@@ -154,7 +154,7 @@ void reshape(int w, int h) {
 
 	if (w == 0) w = 1;
 	if (h == 0) h = 1;
-	glOrtho( -128, 128, -128, 128, -128, 128);
+glOrtho( -128, 128, -128, 128, -128, 128);
 	//if (w < h) glFrustum(-1.0, 1.0, -1.0 * h / w, 1.0 * h / w, 1.0, 2.0);
 	//else glFrustum(-1.0 * w / h, 1.0 * w / h, -1.0, 1.0, 1.0, 2.0);
 	glPushMatrix();
