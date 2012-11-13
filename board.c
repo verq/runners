@@ -58,8 +58,7 @@ void init_eyes() {
 
 void draw_track(double value, int filled) {
 	int number_of_segments = 100;
-	double z = 0;
-	double angle, x, y;
+	double angle, x, z;
 
 	if (filled == UNFILLED) {
 		glBegin(GL_LINE_LOOP);		
@@ -70,24 +69,24 @@ void draw_track(double value, int filled) {
 		else glColor3f(1, 0.3, 0.1);
 	}
 
-	glVertex3f(value, value, 0);
- 	glVertex3f(-value, value, 0);
+	glVertex3f(value, 0, value);
+ 	glVertex3f(-value, 0, value);
 
  	for(int i = 0; i < number_of_segments/2; i++) {
  		angle = 2.0 * PI * (i + number_of_segments/4) / number_of_segments;
  		x = value * cos(angle);
- 		y = value * sin(angle);
- 		glVertex3f(x - value, y, 0);
+ 		z = value * sin(angle);
+ 		glVertex3f(x - value, 0, z);
  	}
 
-	glVertex3f(-value, -value, 0.0);
- 	glVertex3f(value, -value, 0.0);
+	glVertex3f(-value, 0, -value);
+ 	glVertex3f(value, 0, -value);
 
  	for(int i = number_of_segments/2 + 1; i <= number_of_segments; i++) {
  		angle = 2.0 * PI * (i + number_of_segments/4) / number_of_segments;
  		x = value * cos(angle);
- 		y = value * sin(angle);
- 		glVertex3f(x + value, y, 0);
+ 		z = value * sin(angle);
+ 		glVertex3f(x + value, 0, z);
  	}
   	glEnd();
 }
