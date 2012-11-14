@@ -42,11 +42,12 @@ void init_runners() {
 		runners[i] -> velocity = 5.0;
 		runners[i] -> number = i;
 		runners[i] -> running_phase = FORWARD;
+		runners[i] -> turn = 0;
 	}
 	
-	int shift = 5;
-	int track = 37;
-	int end_of_track = 35;
+	int shift = 5.0;
+	int track = 37.0;
+	int end_of_track = 35.0;
 	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
 		init_tree(runners[i], 15, 8, track);
 		for (int j = 0; j < PHASES; j++) {
@@ -79,6 +80,7 @@ void forward(Man* runner) {
 		runner -> head_x += runner -> velocity;
 	} else {
 		runner -> running_phase = FORWARD_TURN;
+		runner -> turn = 0;
 		forward_turn(runner);
 	}
 }
@@ -95,8 +97,23 @@ void backward(Man* runner) {
 
 void forward_turn(Man* runner) {
 	if (runner -> head_z > runner -> phases[FORWARD_TURN]) {
-		runner -> bones[HEAD] -> coord_z -= runner -> velocity;
-		runner -> head_z -= runner -> velocity;
+		double preangle = (runner -> head_x - runner -> phases[FORWARD]) / runner -> phases[FORWARD] ;
+		double angle = asin(preangle);
+		
+		double l = 1.0;
+		double g = 60.0;
+
+		if (runner -> head_z < 0) angle = PI - angle;
+		double z = runner -> phases[FORWARD] * cos(angle + l*PI/g) ;
+		double x = runner -> phases[FORWARD] * sin(angle + l*PI/g) + runner -> phases[FORWARD];
+			
+		runner -> turn += runner -> velocity;
+		
+		runner -> head_x = x;
+		runner -> head_z = z;
+		runner -> bones[HEAD] -> coord_x = x;
+		runner -> bones[HEAD] -> coord_z = z;
+
 	} else {
 		runner -> running_phase = BACKWARD;
 		backward(runner);

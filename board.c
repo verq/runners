@@ -48,8 +48,8 @@ int main(int argc, char **argv) {
 void init_eyes() {
 	eyex = 3;
 	eyey = 3;
-	eyez = -12;
-	centerx = 0;
+	eyez = -3;
+	centerx = 2;
 	centery = 0;
 	centerz = 1;
 	upx = 0;
@@ -57,6 +57,7 @@ void init_eyes() {
 	upz = 0;
 
 }
+
 
 void draw_track(double value, int filled) {
 	int number_of_segments = 100;
@@ -115,7 +116,7 @@ void display() {
 	glLoadIdentity();
 	gluLookAt(eyex, eyey, eyez, centerx, centery, centerz, upx, upy, upz);
 
-	printf("%lf %lf %lf \t %lf %lf %lf \t %lf %lf %lf\n", eyex, eyey, eyez, centerx, centery, centerz, upx, upy, upz);
+	//printf("%lf %lf %lf \t %lf %lf %lf \t %lf %lf %lf\n", eyex, eyey, eyez, centerx, centery, centerz, upx, upy, upz);
 	draw_board();
 
 	glBegin(GL_LINES);
