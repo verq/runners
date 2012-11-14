@@ -42,17 +42,18 @@ void init_runners() {
 		runners[i] -> velocity = 5.0;
 		runners[i] -> number = i;
 		runners[i] -> running_phase = FORWARD;
-		runners[i] -> phases[FORWARD] = 100;
-		runners[i] -> phases[BACKWARD] = -100;
-		runners[i] -> phases[FORWARD_TURN] = -100;
-		runners[i] -> phases[BACKWARD_TURN] = 100;
-
 	}
-
+	
 	int shift = 5;
 	int track = 37;
+	int end_of_track = 35;
 	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
 		init_tree(runners[i], 15, 8, track);
+		for (int j = 0; j < PHASES; j++) {
+			if (j == BACKWARD || j ==  FORWARD_TURN) runners[i] -> phases[j] = -end_of_track;
+			else runners[i] -> phases[j] = end_of_track;
+		}
+		end_of_track = end_of_track + shift;
 		track = track + shift;
 	}
 }
@@ -132,35 +133,22 @@ void init_tree(Man* runner, double x, double y, double z) {
 	runner -> bones[HEAD] -> coord_z = z;
 
 	runner -> bones[BACK] = bone_add_child(runner -> bones[HEAD], 0, 0, 3);
-	runner -> bones[BACK] -> max_angle = 0;
 
 	runner -> bones[LEG_LEFT] = bone_add_child(runner -> bones[BACK], 30, -15, 2);
-	runner -> bones[LEG_LEFT] -> max_angle = -15;
 	runner -> bones[ANKLE_LEFT] = bone_add_child(runner -> bones[LEG_LEFT], 0, -30, 2);
-	runner -> bones[ANKLE_LEFT] -> max_angle = -30;
 	runner -> bones[FOOT_LEFT] = bone_add_child(runner -> bones[ANKLE_LEFT], 90, 90, 0.5);
-	runner -> bones[FOOT_LEFT] -> max_angle = 90;
 	runner -> bones[TOES_LEFT] = bone_add_child(runner -> bones[FOOT_LEFT], 0, 45, 0.1);
-	runner -> bones[TOES_LEFT] -> max_angle = 45;
 
 	runner -> bones[LEG_RIGHT] = bone_add_child(runner -> bones[BACK], -15, 30, 2);
-	runner -> bones[LEG_RIGHT] -> max_angle = 30;
 	runner -> bones[ANKLE_RIGHT] = bone_add_child(runner -> bones[LEG_RIGHT], -30, 0, 2);
-	runner -> bones[ANKLE_RIGHT] -> max_angle = 0;
 	runner -> bones[FOOT_RIGHT] = bone_add_child(runner -> bones[ANKLE_RIGHT], 90, 90, 0.5);
-	runner -> bones[FOOT_RIGHT] -> max_angle = 90;
 	runner -> bones[TOES_RIGHT] = bone_add_child(runner -> bones[FOOT_RIGHT], 45, 0, 0.1);
-	runner -> bones[TOES_RIGHT] -> max_angle = 0;
 
 	runner -> bones[ARM_LEFT] = bone_add_child(runner -> bones[HEAD], -45, 45, 1.5);
-	runner -> bones[ARM_LEFT] -> max_angle = 45;
 	runner -> bones[FOREARM_LEFT] = bone_add_child(runner -> bones[ARM_LEFT], 100, 100, 1.5);
-	runner -> bones[FOREARM_LEFT] -> max_angle = 100;
 
 	runner -> bones[ARM_RIGHT] = bone_add_child(runner -> bones[HEAD], 45, -45, 1.5);
-	runner -> bones[ARM_RIGHT] -> max_angle = -45;
 	runner -> bones[FOREARM_RIGHT] = bone_add_child(runner -> bones[ARM_RIGHT], 100, 100, 1.5);
-	runner -> bones[FOREARM_RIGHT] -> max_angle = 100;
 
 	swap_min_max(runner -> bones[HEAD]);
 	runner -> tree_root = runner -> bones[HEAD];
