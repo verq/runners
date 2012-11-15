@@ -26,7 +26,6 @@ void swap_min_max(Bone* root);
 /* DRAWING */
 void draw_runner(Man* runner);
 void draw_bone(Bone* root);
-void draw_circle(double x, double y, double z, double radius);
 
 /* FREE */
 void free_bones(Bone* root);
@@ -255,21 +254,16 @@ void swap_min_max(Bone* root) {
 
 void draw_runner(Man* runner) {
 	glPushMatrix();
-
+	
+	
 	glTranslatef(runner -> head_x, 0.0, runner -> head_z);
 	glRotatef(runner -> turn_angle, 0.0, 1.0, 0.0);
-	glTranslatef(-runner -> head_x, 0.0, -runner -> head_z);
+	glTranslatef(0.0, runner -> head_y + runner -> head_radius, 0.0);
 
-	//TODO
 	glColor3f(1, 1, 1);
-glTranslatef(runner -> head_x, runner -> head_y + runner -> head_radius, runner -> head_z);
-
-glutSolidSphere(runner -> head_radius, 100, 100);
-                     
-glTranslatef(-runner -> head_x, -runner -> head_y - runner -> head_radius , -runner -> head_z);
-	// *TODO
- 	
-	//draw_circle(runner -> head_x, runner -> head_y, runner -> head_z, runner -> head_radius);
+	glutSolidSphere(runner -> head_radius, 100, 100);
+	glTranslatef(-runner -> head_x, -runner -> head_y - runner -> head_radius , -runner -> head_z);
+	
 	draw_bone(runner -> tree_root);
 	glPopMatrix();
 
@@ -294,20 +288,6 @@ void draw_bone(Bone* root) {
  		draw_bone(root -> child[i]);
 	}
  	glPopMatrix();
-}
-
-void draw_circle(double x, double y, double z, double radius) {
-	glBegin(GL_LINE_LOOP);
-	int number_of_segments = 100;
-	for(int i = 0; i < number_of_segments; i++) {
-		double angle = 2.0 * PI * i / number_of_segments;
-		double real_x = radius * cos(angle);
-		double real_y = radius * sin(angle);
-
-		glColor3f(1, 1, 1);
-		glVertex3f(real_x + x, real_y + y, z); //TODO
-	}
-	glEnd();
 }
 
 /* FREE */

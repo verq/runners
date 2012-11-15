@@ -47,8 +47,8 @@ void init_eyes() {
 //view standard 3 3 -3 2 0 1 0 1 0
 	eyex = 3;
 	eyey = 3;
-	eyez = 1;
-	centerx = -11;
+	eyez = -3;
+	centerx = 2;
 	centery = 0;
 	centerz = 1;
 	upx = 0;
@@ -154,7 +154,7 @@ void reshape(int w, int h) {
 	if (w == 0) w = 1;
 	if (h == 0) h = 1;
 
-	double d = 80.0;
+	double d = 180.0;
 	glOrtho( -d/2, d/2,-d/2, d/2, -d*2, d*2);
 	//if (w < h) glFrustum(-1.0, 1.0, -1.0 * h / w, 1.0 * h / w, 1.0, 2.0);
 	//else glFrustum(-1.0 * w / h, 1.0 * w / h, -1.0, 1.0, 1.0, 2.0);
