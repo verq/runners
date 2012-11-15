@@ -31,7 +31,7 @@
 
 typedef struct Bone_t {
 	double min_angle, max_angle;
-	double coord_x, coord_y, coord_z, angle, length;
+	double coord_x, coord_y, coord_z, depth, angle, length;
 	int number_of_children;
 	int side;
 	struct Bone_t *child[MAX_NUMBER_OF_CHILDREN];

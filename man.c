@@ -72,7 +72,7 @@ void running() {
 		else if (runners[i] -> running_phase == BACKWARD_TURN) backward_turn(runners[i]);
 	}
 
-	glutPostRedisplay();
+ 	glutPostRedisplay();
 	glutTimerFunc(MAX_NUMBER_OF_FRAMES, running, 0);
 }
 
@@ -187,21 +187,21 @@ void init_tree(Man* runner, double x, double y, double z) {
 
 	runner -> bones[BACK] = bone_add_child(runner -> bones[HEAD], 0, 0, 3.0, 0.0);
 
-	runner -> bones[LEG_LEFT] = bone_add_child(runner -> bones[BACK], 30, -15, 2.0, 0.0);
-	runner -> bones[ANKLE_LEFT] = bone_add_child(runner -> bones[LEG_LEFT], 0, -30, 2.0, -1);
-	runner -> bones[FOOT_LEFT] = bone_add_child(runner -> bones[ANKLE_LEFT], 90, 90, 0.5, -1);
-	runner -> bones[TOES_LEFT] = bone_add_child(runner -> bones[FOOT_LEFT], 0, 45, 0.1, -1);
+	runner -> bones[LEG_LEFT] = bone_add_child(runner -> bones[BACK], 30, -15, 2.0, -0.5);
+	runner -> bones[ANKLE_LEFT] = bone_add_child(runner -> bones[LEG_LEFT], 0, -30, 2.0, -0.1);
+	runner -> bones[FOOT_LEFT] = bone_add_child(runner -> bones[ANKLE_LEFT], 90, 90, 0.5, 0.0);
+	runner -> bones[TOES_LEFT] = bone_add_child(runner -> bones[FOOT_LEFT], 0, 45, 0.1, 0.0);
 
-	runner -> bones[LEG_RIGHT] = bone_add_child(runner -> bones[BACK], -15, 30, 2.0, 0.0);
-	runner -> bones[ANKLE_RIGHT] = bone_add_child(runner -> bones[LEG_RIGHT], -30, 0, 2.0, 1);
-	runner -> bones[FOOT_RIGHT] = bone_add_child(runner -> bones[ANKLE_RIGHT], 90, 90, 0.5, 1);
-	runner -> bones[TOES_RIGHT] = bone_add_child(runner -> bones[FOOT_RIGHT], 45, 0, 0.1, 1);
+	runner -> bones[LEG_RIGHT] = bone_add_child(runner -> bones[BACK], -15, 30, 2.0, 0.5);
+	runner -> bones[ANKLE_RIGHT] = bone_add_child(runner -> bones[LEG_RIGHT], -30, 0, 2.0, 0.1);
+	runner -> bones[FOOT_RIGHT] = bone_add_child(runner -> bones[ANKLE_RIGHT], 90, 90, 0.5, 0.0);
+	runner -> bones[TOES_RIGHT] = bone_add_child(runner -> bones[FOOT_RIGHT], 45, 0, 0.1, 0.0);
 
-	runner -> bones[ARM_LEFT] = bone_add_child(runner -> bones[HEAD], -45, 45, 1.5, -1);
-	runner -> bones[FOREARM_LEFT] = bone_add_child(runner -> bones[ARM_LEFT], 100, 100, 1.5, -1);
+	runner -> bones[ARM_LEFT] = bone_add_child(runner -> bones[HEAD], -45, 45, 1.5, -0.5);
+	runner -> bones[FOREARM_LEFT] = bone_add_child(runner -> bones[ARM_LEFT], 100, 100, 1.5, -0.5);
 
-	runner -> bones[ARM_RIGHT] = bone_add_child(runner -> bones[HEAD], 45, -45, 1.5, 1);
-	runner -> bones[FOREARM_RIGHT] = bone_add_child(runner -> bones[ARM_RIGHT], 100, 100, 1.5, 1);
+	runner -> bones[ARM_RIGHT] = bone_add_child(runner -> bones[HEAD], 45, -45, 1.5, 0.5);
+	runner -> bones[FOREARM_RIGHT] = bone_add_child(runner -> bones[ARM_RIGHT], 100, 100, 1.5, 0.5);
 
 	runner -> tree_root = runner -> bones[HEAD];
 }
@@ -220,8 +220,9 @@ Bone* bone_add_child(Bone* root, double min_angle, double max_angle, double leng
 		return NULL;
 	}
 	root -> coord_x = 0.0;
-	root -> coord_y = 0.0; //depth;
+	root -> coord_y = 0.0; 
 	root -> coord_z = 0.0;
+	root -> depth = depth;
 	
 	root -> angle = min_angle;
 	root -> max_angle = max_angle;
@@ -259,7 +260,16 @@ void draw_runner(Man* runner) {
 	glRotatef(runner -> turn_angle, 0.0, 1.0, 0.0);
 	glTranslatef(-runner -> head_x, 0.0, -runner -> head_z);
 
-	draw_circle(runner -> head_x, runner -> head_y, runner -> head_z, runner -> head_radius);
+	//TODO
+	glColor3f(1, 1, 1);
+glTranslatef(runner -> head_x, runner -> head_y + runner -> head_radius, runner -> head_z);
+
+glutSolidSphere(runner -> head_radius, 100, 100);
+                     
+glTranslatef(-runner -> head_x, -runner -> head_y - runner -> head_radius , -runner -> head_z);
+	// *TODO
+ 	
+	//draw_circle(runner -> head_x, runner -> head_y, runner -> head_z, runner -> head_radius);
 	draw_bone(runner -> tree_root);
 	glPopMatrix();
 
@@ -269,18 +279,17 @@ void draw_bone(Bone* root) {
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	
-	glTranslatef(root -> coord_x, root -> coord_y, root -> coord_z); //TODO
+	glTranslatef(root -> coord_x, root -> coord_y, root -> coord_z);
 	glRotatef(root -> angle, 0.0, 0.0, 1.0);
 
 	glBegin(GL_LINES);
  	glColor3f(1, 1, 1);
- 	glVertex3f(0, 0, 0); //TODO, bo trzeba zaczynac w odpowiedniej glebokosci
- 	glColor3f(1, 1, 1);
- 	glVertex3f(root -> length, 0.0, 0.0); //TODO
+ 	glVertex3f(0, 0, 0);
+
+ 	glVertex3f(root -> length, 0.0, root -> depth);
 	glEnd();
 
- 	glTranslatef(root -> length, 0.0, 0.0);
-
+ 	glTranslatef(root -> length, 0.0, root -> depth);
  	for (int i = 0; i < root -> number_of_children; i++) {
  		draw_bone(root -> child[i]);
 	}
