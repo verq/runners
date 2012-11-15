@@ -45,10 +45,9 @@ typedef struct Man_t {
 	Bone* tree_root;
 	double head_x, head_y, head_z, head_radius;
 	Bone* bones[MAX_NUMBER_OF_BONES];
-	double velocity;
+	double velocity, turn_radius;
 	int running_phase, number;
 	double phases[PHASES];
-	int turn;
 } Man;
 
 Man* runners[MAX_NUMBER_OF_RUNERS];
