@@ -58,7 +58,6 @@ void init_eyes() {
 
 }
 
-
 void draw_track(double value, int filled) {
 	int number_of_segments = 100;
 	double angle, x, z;

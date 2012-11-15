@@ -18,6 +18,7 @@ void forward(Man* runner);
 void forward_turn(Man* runner);
 void backward(Man* runner);
 void backward_turn(Man* runner);
+void change_runner_position(Man* runner, double coord_x, double coord_y, double coord_z);
 
 void init_tree(Man* runner, double x, double y, double z);
 Bone* bone_add_child(Bone* root, double min_angle, double max_angle, double length);
@@ -76,8 +77,7 @@ void running() {
 
 void forward(Man* runner) {
 	if (runner -> head_x < runner -> phases[FORWARD]) {
-		runner -> bones[HEAD] -> coord_x += runner -> velocity;
-		runner -> head_x += runner -> velocity;
+		change_runner_position(runner, runner -> head_x + runner -> velocity, runner -> head_y, runner -> head_z);
 	} else {
 		runner -> running_phase = FORWARD_TURN;
 		forward_turn(runner);
@@ -86,8 +86,7 @@ void forward(Man* runner) {
 
 void backward(Man* runner) {
 	if (runner -> head_x > runner -> phases[BACKWARD]) {
-		runner -> bones[HEAD] -> coord_x -= runner -> velocity;
-		runner -> head_x -= runner -> velocity;
+		change_runner_position(runner, runner -> head_x - runner -> velocity, runner -> head_y, runner -> head_z);
 	} else {
 		runner -> running_phase = BACKWARD_TURN;
 		backward_turn(runner);
@@ -98,17 +97,13 @@ void forward_turn(Man* runner) {
 	if (runner -> head_z >= runner -> phases[FORWARD_TURN] + 2.0) {
 		double preangle = (runner -> head_x - runner -> turn_radius) / runner -> turn_radius;
 		double angle = asin(preangle);
-		
-		double g = 60.0;
 
 		if (runner -> head_z < 0) angle = PI - angle;
+		double g = 60.0;
 		double z = runner -> turn_radius * cos(angle + PI/g) ;
 		double x = runner -> turn_radius * sin(angle + PI/g) + runner -> turn_radius;
-			
-		runner -> head_x = x;
-		runner -> head_z = z;
-		runner -> bones[HEAD] -> coord_x = x;
-		runner -> bones[HEAD] -> coord_z = z;
+
+		change_runner_position(runner, x, runner -> head_y, z);
 
 	} else {
 		runner -> running_phase = BACKWARD;
@@ -121,20 +116,26 @@ void backward_turn(Man* runner) {
 		double preangle = (runner -> head_x + runner -> turn_radius) / runner -> turn_radius;
 		double angle = asin(preangle);
 
-		double g = 60.0;
-
 		if (runner -> head_z < 0) angle = PI - angle;
+		double g = 60.0;
 		double z = runner -> turn_radius * cos(angle + PI/g);
 		double x = runner -> turn_radius * sin(angle + PI/g) - runner -> turn_radius;
 
-		runner -> head_x = x;
-		runner -> head_z = z;
-		runner -> bones[HEAD] -> coord_x = x;
-		runner -> bones[HEAD] -> coord_z = z;
+		change_runner_position(runner, x, runner -> head_y, z);
 	} else {
 		runner -> running_phase = FORWARD;
 		forward(runner);
 	}
+}
+
+void change_runner_position(Man* runner, double coord_x, double coord_y, double coord_z) {
+	runner -> head_x = coord_x;
+	runner -> head_y = coord_y;
+	runner -> head_z = coord_z;
+
+	runner -> bones[HEAD] -> coord_x = coord_x;
+	runner -> bones[HEAD] -> coord_y = coord_y;
+	runner -> bones[HEAD] -> coord_z = coord_z;
 }
 
 void walking() {
