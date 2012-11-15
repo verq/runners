@@ -14,13 +14,13 @@ void forward(Man* runner);
 void forward_turn(Man* runner);
 void backward(Man* runner);
 void backward_turn(Man* runner);
-void change_runner_position(Man* runner, double coord_x, double coord_y, double coord_z);
+void change_runner_position(Man* runner, double coord_x, double coord_y, double coord_z, double turn_angle);
 
 /* RUNNERS MOVING */
 void walking();
 void calculate_angles(int velocity, Bone* root);
 void init_tree(Man* runner, double x, double y, double z);
-Bone* bone_add_child(Bone* root, double min_angle, double max_angle, double length);
+Bone* bone_add_child(Bone* root, double min_angle, double max_angle, double length, double depth);
 void swap_min_max(Bone* root);
 
 /* DRAWING */
@@ -44,6 +44,7 @@ void init_runners() {
 		runners[i] -> velocity = 5.0;
 		runners[i] -> number = i;
 		runners[i] -> running_phase = FORWARD;
+		runners[i] -> turn_angle = 0.0;
 	}
 	
 	int shift = 5.0;
@@ -78,8 +79,9 @@ void running() {
 /* MOVING PHASES */
 
 void forward(Man* runner) {
+	runner -> turn_angle = 0.0;
 	if (runner -> head_x < runner -> phases[FORWARD]) {
-		change_runner_position(runner, runner -> head_x + runner -> velocity, runner -> head_y, runner -> head_z);
+		change_runner_position(runner, runner -> head_x + runner -> velocity, runner -> head_y, runner -> head_z, runner -> turn_angle);
 	} else {
 		runner -> running_phase = FORWARD_TURN;
 		forward_turn(runner);
@@ -87,8 +89,9 @@ void forward(Man* runner) {
 }
 
 void backward(Man* runner) {
+	runner -> turn_angle = 180.0;
 	if (runner -> head_x > runner -> phases[BACKWARD]) {
-		change_runner_position(runner, runner -> head_x - runner -> velocity, runner -> head_y, runner -> head_z);
+		change_runner_position(runner, runner -> head_x - runner -> velocity, runner -> head_y, runner -> head_z, runner -> turn_angle);
 	} else {
 		runner -> running_phase = BACKWARD_TURN;
 		backward_turn(runner);
@@ -98,13 +101,12 @@ void backward(Man* runner) {
 void forward_turn(Man* runner) {
 	if (runner -> head_z >= runner -> phases[FORWARD_TURN] + 2.0) {
 		double angle = asin((runner -> head_x - runner -> turn_radius) / runner -> turn_radius);
-
+		
 		if (runner -> head_z < 0) angle = PI - angle;
-		double z = runner -> turn_radius * cos(angle + runner -> velocity / runner -> turn_radius);
 		double x = runner -> turn_radius * sin(angle + runner -> velocity / runner -> turn_radius) + runner -> turn_radius;
-
-		change_runner_position(runner, x, runner -> head_y, z);
-
+		double z = runner -> turn_radius * cos(angle + runner -> velocity / runner -> turn_radius);
+		
+		change_runner_position(runner, x, runner -> head_y, z, 180.0 * angle / PI);
 	} else {
 		runner -> running_phase = BACKWARD;
 		backward(runner);
@@ -119,14 +121,14 @@ void backward_turn(Man* runner) {
 		double z = runner -> turn_radius * cos(angle + runner -> velocity / runner -> turn_radius);
 		double x = runner -> turn_radius * sin(angle + runner -> velocity / runner -> turn_radius) - runner -> turn_radius;
 
-		change_runner_position(runner, x, runner -> head_y, z);
+		change_runner_position(runner, x, runner -> head_y, z, 180.0 * angle/PI);
 	} else {
 		runner -> running_phase = FORWARD;
 		forward(runner);
 	}
 }
 
-void change_runner_position(Man* runner, double coord_x, double coord_y, double coord_z) {
+void change_runner_position(Man* runner, double coord_x, double coord_y, double coord_z, double turn_angle) {
 	runner -> head_x = coord_x;
 	runner -> head_y = coord_y;
 	runner -> head_z = coord_z;
@@ -134,6 +136,8 @@ void change_runner_position(Man* runner, double coord_x, double coord_y, double 
 	runner -> bones[HEAD] -> coord_x = coord_x;
 	runner -> bones[HEAD] -> coord_y = coord_y;
 	runner -> bones[HEAD] -> coord_z = coord_z;
+
+	runner -> turn_angle = turn_angle;
 }
 
 /* RUNNERS MOVES */
@@ -175,35 +179,34 @@ void init_tree(Man* runner, double x, double y, double z) {
 	runner -> head_z = z;
 	runner -> head_radius = 0.8;
 
-	runner -> bones[HEAD] = bone_add_child(runner -> tree_root, -90, -90, 0.5);
-	runner -> bones[HEAD] -> max_angle = -90;
+	runner -> bones[HEAD] = bone_add_child(runner -> tree_root, -90, -90, 0.5, 0.0);
 
 	runner -> bones[HEAD] -> coord_x = x;
 	runner -> bones[HEAD] -> coord_y = y;
 	runner -> bones[HEAD] -> coord_z = z;
 
-	runner -> bones[BACK] = bone_add_child(runner -> bones[HEAD], 0, 0, 3);
+	runner -> bones[BACK] = bone_add_child(runner -> bones[HEAD], 0, 0, 3.0, 0.0);
 
-	runner -> bones[LEG_LEFT] = bone_add_child(runner -> bones[BACK], 30, -15, 2);
-	runner -> bones[ANKLE_LEFT] = bone_add_child(runner -> bones[LEG_LEFT], 0, -30, 2);
-	runner -> bones[FOOT_LEFT] = bone_add_child(runner -> bones[ANKLE_LEFT], 90, 90, 0.5);
-	runner -> bones[TOES_LEFT] = bone_add_child(runner -> bones[FOOT_LEFT], 0, 45, 0.1);
+	runner -> bones[LEG_LEFT] = bone_add_child(runner -> bones[BACK], 30, -15, 2.0, 0.0);
+	runner -> bones[ANKLE_LEFT] = bone_add_child(runner -> bones[LEG_LEFT], 0, -30, 2.0, -1);
+	runner -> bones[FOOT_LEFT] = bone_add_child(runner -> bones[ANKLE_LEFT], 90, 90, 0.5, -1);
+	runner -> bones[TOES_LEFT] = bone_add_child(runner -> bones[FOOT_LEFT], 0, 45, 0.1, -1);
 
-	runner -> bones[LEG_RIGHT] = bone_add_child(runner -> bones[BACK], -15, 30, 2);
-	runner -> bones[ANKLE_RIGHT] = bone_add_child(runner -> bones[LEG_RIGHT], -30, 0, 2);
-	runner -> bones[FOOT_RIGHT] = bone_add_child(runner -> bones[ANKLE_RIGHT], 90, 90, 0.5);
-	runner -> bones[TOES_RIGHT] = bone_add_child(runner -> bones[FOOT_RIGHT], 45, 0, 0.1);
+	runner -> bones[LEG_RIGHT] = bone_add_child(runner -> bones[BACK], -15, 30, 2.0, 0.0);
+	runner -> bones[ANKLE_RIGHT] = bone_add_child(runner -> bones[LEG_RIGHT], -30, 0, 2.0, 1);
+	runner -> bones[FOOT_RIGHT] = bone_add_child(runner -> bones[ANKLE_RIGHT], 90, 90, 0.5, 1);
+	runner -> bones[TOES_RIGHT] = bone_add_child(runner -> bones[FOOT_RIGHT], 45, 0, 0.1, 1);
 
-	runner -> bones[ARM_LEFT] = bone_add_child(runner -> bones[HEAD], -45, 45, 1.5);
-	runner -> bones[FOREARM_LEFT] = bone_add_child(runner -> bones[ARM_LEFT], 100, 100, 1.5);
+	runner -> bones[ARM_LEFT] = bone_add_child(runner -> bones[HEAD], -45, 45, 1.5, -1);
+	runner -> bones[FOREARM_LEFT] = bone_add_child(runner -> bones[ARM_LEFT], 100, 100, 1.5, -1);
 
-	runner -> bones[ARM_RIGHT] = bone_add_child(runner -> bones[HEAD], 45, -45, 1.5);
-	runner -> bones[FOREARM_RIGHT] = bone_add_child(runner -> bones[ARM_RIGHT], 100, 100, 1.5);
+	runner -> bones[ARM_RIGHT] = bone_add_child(runner -> bones[HEAD], 45, -45, 1.5, 1);
+	runner -> bones[FOREARM_RIGHT] = bone_add_child(runner -> bones[ARM_RIGHT], 100, 100, 1.5, 1);
 
 	runner -> tree_root = runner -> bones[HEAD];
 }
 
-Bone* bone_add_child(Bone* root, double min_angle, double max_angle, double length) {
+Bone* bone_add_child(Bone* root, double min_angle, double max_angle, double length, double depth) {
 	if (root == NULL) {
 		root = (Bone*)malloc(sizeof(Bone));
 		root -> parent = NULL;
@@ -217,7 +220,7 @@ Bone* bone_add_child(Bone* root, double min_angle, double max_angle, double leng
 		return NULL;
 	}
 	root -> coord_x = 0.0;
-	root -> coord_y = 0.0;
+	root -> coord_y = 0.0; //depth;
 	root -> coord_z = 0.0;
 	
 	root -> angle = min_angle;
@@ -250,13 +253,22 @@ void swap_min_max(Bone* root) {
 /* DRAWING */
 
 void draw_runner(Man* runner) {
+	glPushMatrix();
+
+	glTranslatef(runner -> head_x, 0.0, runner -> head_z);
+	glRotatef(runner -> turn_angle, 0.0, 1.0, 0.0);
+	glTranslatef(-runner -> head_x, 0.0, -runner -> head_z);
+
 	draw_circle(runner -> head_x, runner -> head_y, runner -> head_z, runner -> head_radius);
 	draw_bone(runner -> tree_root);
+	glPopMatrix();
+
 }
 
 void draw_bone(Bone* root) {
+	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
-
+	
 	glTranslatef(root -> coord_x, root -> coord_y, root -> coord_z); //TODO
 	glRotatef(root -> angle, 0.0, 0.0, 1.0);
 
@@ -264,7 +276,7 @@ void draw_bone(Bone* root) {
  	glColor3f(1, 1, 1);
  	glVertex3f(0, 0, 0); //TODO, bo trzeba zaczynac w odpowiedniej glebokosci
  	glColor3f(1, 1, 1);
- 	glVertex3f(root -> length, 0, 0); //TODO
+ 	glVertex3f(root -> length, 0.0, 0.0); //TODO
 	glEnd();
 
  	glTranslatef(root -> length, 0.0, 0.0);
@@ -273,7 +285,6 @@ void draw_bone(Bone* root) {
  		draw_bone(root -> child[i]);
 	}
  	glPopMatrix();
-
 }
 
 void draw_circle(double x, double y, double z, double radius) {

@@ -5,9 +5,6 @@
 #include <time.h>
 #include "man.h"
 
-#define PI 			3.1415926535897	
-#define MAX_NUMBER_OF_RUNERS	8
-
 #define UNFILLED		0
 #define ORANGE			1
 #define GREEN			2
@@ -115,7 +112,7 @@ void display() {
 	glLoadIdentity();
 	gluLookAt(eyex, eyey, eyez, centerx, centery, centerz, upx, upy, upz);
 
-	//printf("%lf %lf %lf \t %lf %lf %lf \t %lf %lf %lf\n", eyex, eyey, eyez, centerx, centery, centerz, upx, upy, upz);
+	printf("%lf %lf %lf \t %lf %lf %lf \t %lf %lf %lf\n", eyex, eyey, eyez, centerx, centery, centerz, upx, upy, upz);
 	draw_board();
 
 	glBegin(GL_LINES);
@@ -154,7 +151,9 @@ void reshape(int w, int h) {
 
 	if (w == 0) w = 1;
 	if (h == 0) h = 1;
-	glOrtho( -128, 128, -128, 128, -128, 128);
+
+	double d = 180.0;
+	glOrtho( -d/2, d/2,-d/2, d/2, -d*2, d*2);
 	//if (w < h) glFrustum(-1.0, 1.0, -1.0 * h / w, 1.0 * h / w, 1.0, 2.0);
 	//else glFrustum(-1.0 * w / h, 1.0 * w / h, -1.0, 1.0, 1.0, 2.0);
 	glPushMatrix();

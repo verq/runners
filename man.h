@@ -42,7 +42,7 @@ typedef struct Man_t {
 	Bone* tree_root;
 	double head_x, head_y, head_z, head_radius;
 	Bone* bones[MAX_NUMBER_OF_BONES];
-	double velocity, turn_radius;
+	double velocity, turn_radius, turn_angle;
 	int running_phase, number;
 	double phases[PHASES];
 } Man;
