@@ -5,39 +5,40 @@
 #include <time.h>
 #include "man.h"
 
-Man* runners[MAX_NUMBER_OF_RUNERS];
-
-int animation;
-
+/* MAIN FUNCTIONS */
 void running();
-void walking();
 void init_runners();
-void draw_runner(Man* runner);
 
+/* MOVING PHASES */
 void forward(Man* runner);
 void forward_turn(Man* runner);
 void backward(Man* runner);
 void backward_turn(Man* runner);
 void change_runner_position(Man* runner, double coord_x, double coord_y, double coord_z);
 
+/* RUNNERS MOVING */
+void walking();
+void calculate_angles(int velocity, Bone* root);
 void init_tree(Man* runner, double x, double y, double z);
 Bone* bone_add_child(Bone* root, double min_angle, double max_angle, double length);
 void swap_min_max(Bone* root);
-void free_bones(Bone* root);
-void free_runners();
 
+/* DRAWING */
+void draw_runner(Man* runner);
 void draw_bone(Bone* root);
 void draw_circle(double x, double y, double z, double radius);
-void calculate_angles(int velocity, Bone* root);
 
+/* FREE */
 void free_bones(Bone* root);
 void free_runners();
 
+/* WRITING TREE */
 void write_bone(Bone* b);
 void write_tree(Bone* root);
 
+
+/* MAIN FUNCTIONS */
 void init_runners() {
-	animation = START;
 	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
 		runners[i] = (Man*)malloc(sizeof(Man));
 		runners[i] -> velocity = 5.0;
@@ -61,7 +62,6 @@ void init_runners() {
 }
 
 void running() {
-	if (animation == STOP) return;
 	walking();
 
 	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
@@ -74,6 +74,8 @@ void running() {
 	glutPostRedisplay();
 	glutTimerFunc(MAX_NUMBER_OF_FRAMES, running, 0);
 }
+
+/* MOVING PHASES */
 
 void forward(Man* runner) {
 	if (runner -> head_x < runner -> phases[FORWARD]) {
@@ -95,13 +97,11 @@ void backward(Man* runner) {
 
 void forward_turn(Man* runner) {
 	if (runner -> head_z >= runner -> phases[FORWARD_TURN] + 2.0) {
-		double preangle = (runner -> head_x - runner -> turn_radius) / runner -> turn_radius;
-		double angle = asin(preangle);
+		double angle = asin((runner -> head_x - runner -> turn_radius) / runner -> turn_radius);
 
 		if (runner -> head_z < 0) angle = PI - angle;
-		double g = 60.0;
-		double z = runner -> turn_radius * cos(angle + PI/g) ;
-		double x = runner -> turn_radius * sin(angle + PI/g) + runner -> turn_radius;
+		double z = runner -> turn_radius * cos(angle + runner -> velocity / runner -> turn_radius);
+		double x = runner -> turn_radius * sin(angle + runner -> velocity / runner -> turn_radius) + runner -> turn_radius;
 
 		change_runner_position(runner, x, runner -> head_y, z);
 
@@ -113,13 +113,11 @@ void forward_turn(Man* runner) {
 
 void backward_turn(Man* runner) {
 	if (runner -> head_z < runner -> phases[BACKWARD_TURN] - 2.0) {
-		double preangle = (runner -> head_x + runner -> turn_radius) / runner -> turn_radius;
-		double angle = asin(preangle);
+		double angle = asin((runner -> head_x + runner -> turn_radius) / runner -> turn_radius);
 
 		if (runner -> head_z < 0) angle = PI - angle;
-		double g = 60.0;
-		double z = runner -> turn_radius * cos(angle + PI/g);
-		double x = runner -> turn_radius * sin(angle + PI/g) - runner -> turn_radius;
+		double z = runner -> turn_radius * cos(angle + runner -> velocity / runner -> turn_radius);
+		double x = runner -> turn_radius * sin(angle + runner -> velocity / runner -> turn_radius) - runner -> turn_radius;
 
 		change_runner_position(runner, x, runner -> head_y, z);
 	} else {
@@ -138,9 +136,36 @@ void change_runner_position(Man* runner, double coord_x, double coord_y, double 
 	runner -> bones[HEAD] -> coord_z = coord_z;
 }
 
+/* RUNNERS MOVES */
+
 void walking() {
 	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
 		calculate_angles(runners[i] -> velocity, runners[i] -> tree_root);
+	}
+}
+
+void calculate_angles(int velocity, Bone* root) {
+	if (root -> max_angle - root -> min_angle != 0) {
+
+		double temp = (abs(root -> max_angle) + abs(root -> min_angle)) / velocity;
+		if (root -> side == 0) {
+			if (root -> angle + temp < root -> max_angle) {
+				root -> angle = root -> angle + temp;
+			} else {
+				root -> angle = root -> angle - temp;
+				root -> side = 1;
+			}
+		} else {
+			if (root -> angle - temp > root -> min_angle) {
+				root -> angle = root -> angle - temp;
+			} else {
+				root -> angle = root -> angle + temp;
+				root -> side = 0;
+			}
+		}
+	}
+	for (int i = 0; i < root -> number_of_children; i++) {
+		calculate_angles(velocity, root -> child[i]);
 	}
 }
 
@@ -175,33 +200,7 @@ void init_tree(Man* runner, double x, double y, double z) {
 	runner -> bones[ARM_RIGHT] = bone_add_child(runner -> bones[HEAD], 45, -45, 1.5);
 	runner -> bones[FOREARM_RIGHT] = bone_add_child(runner -> bones[ARM_RIGHT], 100, 100, 1.5);
 
-	swap_min_max(runner -> bones[HEAD]);
 	runner -> tree_root = runner -> bones[HEAD];
-}
-
-void calculate_angles(int velocity, Bone* root) {
-	if (root -> max_angle - root -> min_angle != 0) {
-
-		double temp = (abs(root -> max_angle) + abs(root -> min_angle)) / velocity;
-		if (root -> side == 0) {
-			if (root -> angle + temp < root -> max_angle) {
-				root -> angle = root -> angle + temp;
-			} else {
-				root -> angle = root -> angle - temp;
-				root -> side = 1;
-			}
-		} else {
-			if (root -> angle - temp > root -> min_angle) {
-				root -> angle = root -> angle - temp;
-			} else {
-				root -> angle = root -> angle + temp;
-				root -> side = 0;
-			}
-		}
-	}
-	for (int i = 0; i < root -> number_of_children; i++) {
-		calculate_angles(velocity, root -> child[i]);
-	}
 }
 
 Bone* bone_add_child(Bone* root, double min_angle, double max_angle, double length) {
@@ -220,18 +219,35 @@ Bone* bone_add_child(Bone* root, double min_angle, double max_angle, double leng
 	root -> coord_x = 0.0;
 	root -> coord_y = 0.0;
 	root -> coord_z = 0.0;
+	
 	root -> angle = min_angle;
 	root -> max_angle = max_angle;
 	root -> min_angle = min_angle;
+
 	root -> length = length;
 	root -> number_of_children = 0;
 	root -> side = 0;
+	
+	swap_min_max(root);
 
 	for (int i = 0; i < MAX_NUMBER_OF_CHILDREN; i++) {
 		root -> child[i] = NULL;
 	}
 	return root;
 }
+
+void swap_min_max(Bone* root) {
+	if (root -> min_angle > root -> max_angle) {
+		double temp = root -> min_angle;
+		root -> min_angle = root -> max_angle;
+		root -> max_angle = temp;
+		root -> side = 1;
+	} else {
+		root -> side = 0;
+	}
+}
+
+/* DRAWING */
 
 void draw_runner(Man* runner) {
 	draw_circle(runner -> head_x, runner -> head_y, runner -> head_z, runner -> head_radius);
@@ -272,20 +288,6 @@ void draw_circle(double x, double y, double z, double radius) {
 		glVertex3f(real_x + x, real_y + y, z); //TODO
 	}
 	glEnd();
-}
-
-void swap_min_max(Bone* root) {
-	if (root -> min_angle > root -> max_angle) {
-		double temp = root -> min_angle;
-		root -> min_angle = root -> max_angle;
-		root -> max_angle = temp;
-		root -> side = 1;
-	} else {
-		root -> side = 0;
-	}
-	for (int i = 0; i < root -> number_of_children; i++) {
-		swap_min_max(root -> child[i]);
-	}
 }
 
 /* FREE */

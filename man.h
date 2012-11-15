@@ -8,9 +8,6 @@
 #define MAX_NUMBER_OF_BONES 	15
 #define MAX_NUMBER_OF_RUNERS	8
 
-#define STOP 			0
-#define START 			1
-
 #define FORWARD			0
 #define FORWARD_TURN		1
 #define BACKWARD		2
@@ -53,7 +50,6 @@ typedef struct Man_t {
 Man* runners[MAX_NUMBER_OF_RUNERS];
 
 void init_runners();
-void walking();
 void running();
 void draw_runner(Man* runner);
 
