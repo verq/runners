@@ -40,7 +40,7 @@ void write_tree(Bone* root);
 void init_runners() {
 	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
 		runners[i] = (Man*)malloc(sizeof(Man));
-		runners[i] -> velocity = 5.0;
+		runners[i] -> velocity =  FRAME_EVERY_MILLISECONDS / 17.0;
 		runners[i] -> number = i;
 		runners[i] -> running_phase = FORWARD;
 		runners[i] -> turn_angle = 0.0;
@@ -72,7 +72,7 @@ void running() {
 	}
 
  	glutPostRedisplay();
-	glutTimerFunc(MAX_NUMBER_OF_FRAMES, running, 0);
+	glutTimerFunc(FRAME_EVERY_MILLISECONDS, running, 0);
 }
 
 /* MOVING PHASES */
@@ -98,7 +98,7 @@ void backward(Man* runner) {
 }
 
 void forward_turn(Man* runner) {
-	if (runner -> head_z >= runner -> phases[FORWARD_TURN] + 2.0) {
+	if (runner -> head_z >= runner -> phases[FORWARD_TURN] + 0.1) {
 		double angle = asin((runner -> head_x - runner -> turn_radius) / runner -> turn_radius);
 		
 		if (runner -> head_z < 0) angle = PI - angle;
@@ -113,7 +113,7 @@ void forward_turn(Man* runner) {
 }
 
 void backward_turn(Man* runner) {
-	if (runner -> head_z < runner -> phases[BACKWARD_TURN] - 2.0) {
+	if (runner -> head_z < runner -> phases[BACKWARD_TURN] - 0.1) {
 		double angle = asin((runner -> head_x + runner -> turn_radius) / runner -> turn_radius);
 
 		if (runner -> head_z < 0) angle = PI - angle;
@@ -143,7 +143,7 @@ void change_runner_position(Man* runner, double coord_x, double coord_y, double 
 
 void walking() {
 	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
-		calculate_angles(runners[i] -> velocity, runners[i] -> tree_root);
+		calculate_angles(runners[i] -> velocity * FRAME_EVERY_MILLISECONDS, runners[i] -> tree_root);
 	}
 }
 
@@ -254,7 +254,6 @@ void swap_min_max(Bone* root) {
 
 void draw_runner(Man* runner) {
 	glPushMatrix();
-	
 	
 	glTranslatef(runner -> head_x, 0.0, runner -> head_z);
 	glRotatef(runner -> turn_angle, 0.0, 1.0, 0.0);

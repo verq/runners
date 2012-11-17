@@ -9,7 +9,11 @@
 #define ORANGE			1
 #define GREEN			2
 
+#define RUNNERS_EYES		0
+#define BEHING_RUNNERS_HEAD	1
+
 GLdouble eyex, eyey, eyez, centerx, centery, centerz, upx, upy, upz;
+int view_mode;
 
 void init_eyes();
 
@@ -24,6 +28,8 @@ void draw_track(double value, int filled);
 int main(int argc, char **argv) {
 	init_runners();
 	init_eyes();
+	
+	view_mode = RUNNERS_EYES;
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
@@ -107,16 +113,33 @@ void draw_board() {
 
 void display() {
 	glClear(GL_COLOR_BUFFER_BIT);
-
 	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
-	
+	glPushMatrix();
 	glLoadIdentity();
-	//gluLookAt(eyex, eyey, eyez, centerx, centery, centerz, upx, upy, upz);
-	//gluLookAt(eyex, eyey, eyez, runners[3] -> head_x, runners[3] -> head_y, runners[3] -> head_z, upx, upy, upz);
-	gluLookAt(runners[3] -> head_x, runners[3] -> head_y, runners[3] -> head_z, centerx, centery, centerz, upz, upy, upz);
+
+	int number_of_runner = 3;
+
+	double angle;
+	if (runners[number_of_runner] -> turn_angle == 0) angle = 0;
+	else if (runners[number_of_runner] -> turn_angle == 180.0) angle = -PI;
+	else angle = -runners[number_of_runner] -> turn_angle * PI / 180.0;
 	
-	printf("%lf %lf %lf \t %lf %lf %lf \t %lf %lf %lf\n", eyex, eyey, eyez, centerx, centery, centerz, upx, upy, upz);
+	if (view_mode == RUNNERS_EYES) {
+		gluLookAt(runners[number_of_runner] -> head_x, runners[number_of_runner] -> head_y, runners[number_of_runner] -> head_z,
+			runners[number_of_runner] -> head_x + cos(angle),
+			runners[number_of_runner] -> head_y,
+			runners[number_of_runner] -> head_z + sin(angle),
+			0.0,  1.0,  0.0);
+	} else {
+		gluLookAt(runners[number_of_runner] -> head_x, runners[number_of_runner] -> head_y, runners[number_of_runner] -> head_z,
+			runners[number_of_runner] -> head_x + cos(angle),
+			runners[number_of_runner] -> head_y,
+			runners[number_of_runner] -> head_z + sin(angle),
+			0.0,  1.0,  0.0);
+	}
+	//gluLookAt(eyex, eyey, eyez, centerx, centery, centerz, upx, upy, upz);
+	//printf("%lf %lf %lf \t %lf %lf %lf \t %lf %lf %lf\n", eyex, eyey, eyez, centerx, centery, centerz, upx, upy, upz);
+
 	draw_board();
 
 	glBegin(GL_LINES);
@@ -141,7 +164,7 @@ void display() {
 		if (runners[i] -> tree_root != NULL) draw_runner(runners[i]);
 	}
 
-	glPushMatrix();
+	glPopMatrix();
 
 	glFlush();
 	glutSwapBuffers();	
@@ -153,15 +176,9 @@ void reshape(int w, int h) {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
-	if (w == 0) w = 1;
-	if (h == 0) h = 1;
+	gluPerspective(100, 1.0, 1, 200);
 
-	double d = 20.0;
-	glOrtho( -d/2, d/2,-d/2, d/2, -d*2, d*2);
-	//if (w < h) glFrustum(-1.0, 1.0, -1.0 * h / w, 1.0 * h / w, 1.0, 2.0);
-	//else glFrustum(-1.0 * w / h, 1.0 * w / h, -1.0, 1.0, 1.0, 2.0);
 	glPushMatrix();
-	
 }
 
 void keyboard(unsigned char key, int x, int y) {
