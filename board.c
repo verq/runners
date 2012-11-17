@@ -96,88 +96,69 @@ void draw_board() {
 	}
 }
 
-void display_runners_view() {
 
+void setViewport(int bottom_left_x, int bottom_left_y, int w, int h) {
 	glMatrixMode(GL_PROJECTION);
+
 	glPushMatrix();
+
 	glLoadIdentity();
 
-	glViewport(0, 0, width, height);
-	gluPerspective(100, 1.0, 1, 200);
+	glViewport(bottom_left_x, bottom_left_y, w, h);
+	gluPerspective(100, 1.0, 1, 300.0);
 	glPopMatrix();
 
 	glMatrixMode(GL_MODELVIEW);
+}
+
+void draw_board_and_runners() {
+	draw_board();
+
+	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
+		if (runners[i] -> tree_root != NULL) draw_runner(runners[i]);
+	}
+	
+}
+
+void display_top_view() {
+	setViewport(1 * width / 3, 1 * height / 4, width, height);
+
+	glPushMatrix();
+	glLoadIdentity();
+	gluLookAt(-50, 250, -70, -50, 0, -70, 0, 0, 1);
+	draw_board_and_runners() ;
+	glPopMatrix();
+}
+
+void display_runners_view() {
+	setViewport(0, 0, width, height);
+
+	glPushMatrix();
 	glLoadIdentity();
 
 	Man* looker = runners[number_of_runner];
-	
+
 	double angle;
 	if (looker -> turn_angle == 0) angle = 0;
 	else if (looker -> turn_angle == 180.0) angle = -PI;
 	else angle = -looker -> turn_angle * PI / 180.0;
 
 	if (view_mode == RUNNERS_EYES) {
-		gluLookAt(looker -> head_x, looker -> head_y, looker -> head_z,
-			looker -> head_x + cos(angle),
-			looker -> head_y,
-			looker -> head_z + sin(angle),
-			0.0,  1.0,  0.0);
+		gluLookAt(looker -> head_x, looker -> head_y, looker -> head_z, looker -> head_x + cos(angle), looker -> head_y, looker -> head_z + sin(angle), 0.0,  1.0,  0.0);
 	} else {
 		double behind_shift = 10.0;
 		if (looker -> running_phase == FORWARD) {
-			gluLookAt(looker -> head_x - behind_shift, looker -> head_y, looker -> head_z,
-				looker -> head_x + cos(angle),
-				looker -> head_y,
-				looker -> head_z + sin(angle),
-				0.0,  1.0,  0.0);
+			gluLookAt(looker -> head_x - behind_shift, looker -> head_y, looker -> head_z, looker -> head_x + cos(angle), looker -> head_y, looker -> head_z + sin(angle), 0.0,  1.0,  0.0);
 		} else if (looker -> running_phase == FORWARD_TURN || looker -> running_phase == BACKWARD_TURN) {
-			gluLookAt(looker -> head_x - behind_shift * cos(angle), looker -> head_y, looker -> head_z - behind_shift * sin(angle),
-				looker -> head_x - cos(angle),
-				looker -> head_y,
-				looker -> head_z - sin(angle),
-				0.0,  1.0,  0.0);
+			gluLookAt(looker -> head_x - behind_shift * cos(angle), looker -> head_y, looker -> head_z - behind_shift * sin(angle), looker -> head_x - cos(angle), looker -> head_y, looker -> head_z - sin(angle), 0.0,  1.0,  0.0);
 		} else if (looker -> running_phase == BACKWARD) {
-			gluLookAt(looker -> head_x + behind_shift, looker -> head_y, looker -> head_z,
-				looker -> head_x + cos(angle),
-				looker -> head_y,
-				looker -> head_z + sin(angle),
-				0.0,  1.0,  0.0);
+			gluLookAt(looker -> head_x + behind_shift, looker -> head_y, looker -> head_z, looker -> head_x + cos(angle), looker -> head_y, looker -> head_z + sin(angle), 0.0,  1.0,  0.0);
 		}
 	}
-	draw_board();
-
-	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
-		if (runners[i] -> tree_root != NULL) draw_runner(runners[i]);
-	}
-	glPopMatrix();
-
-}
-
-void display_top_view() {
-	glMatrixMode(GL_PROJECTION);
-
-	glPushMatrix();
-
-	glLoadIdentity();
-
-	glViewport(1 * width / 3, 1 * height / 4, width, height);
-	gluPerspective(100, 1.0, 1, 300.0);
-	glPopMatrix();
-
-
-	glMatrixMode(GL_MODELVIEW);
-
-	glPushMatrix();
-	glLoadIdentity();
-	gluLookAt(-50, 250, -70, -50, 0, -70, 0, 0, 1);
-	draw_board();
-
-	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
-		if (runners[i] -> tree_root != NULL) draw_runner(runners[i]);
-	}
-	
+	draw_board_and_runners();
 	glPopMatrix();
 }
+
 
 
 void display() {
