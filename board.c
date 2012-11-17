@@ -12,10 +12,8 @@
 #define RUNNERS_EYES		0
 #define BEHING_RUNNERS_HEAD	1
 
-GLdouble eyex, eyey, eyez, centerx, centery, centerz, upx, upy, upz;
-int view_mode;
 
-void init_eyes();
+int view_mode;
 
 void display();
 void reshape();
@@ -27,7 +25,6 @@ void draw_track(double value, int filled);
 
 int main(int argc, char **argv) {
 	init_runners();
-	init_eyes();
 	
 	view_mode = RUNNERS_EYES;
 
@@ -45,22 +42,6 @@ int main(int argc, char **argv) {
 
 	free_runners();
  	return 0;
-}
-
-
-void init_eyes() {
-//view from back 3 3 1 -11 0 1 0 1 0
-//view standard 3 3 -3 2 0 1 0 1 0
-	eyex = 3;
-	eyey = 3;
-	eyez = -3;
-	centerx = 2;
-	centery = 0;
-	centerz = 1;
-	upx = 0;
-	upy = 1;
-	upz = 0;
-
 }
 
 void draw_track(double value, int filled) {
@@ -185,33 +166,17 @@ void reshape(int w, int h) {
 void keyboard(unsigned char key, int x, int y) {
 	switch (key) {
 		case 27: exit(0); break;
-		case 'n': init_eyes(); display(); break;
-		case '1': eyex = eyex - 1; display(); break;
-		case '2': eyey = eyey - 1; display(); break;
-		case '3': eyez = eyez - 1; display(); break;
-		case '4': centerx = centerx - 1; display(); break;
-		case '5': centery = centery - 1; display(); break;
-		case '6': centerz = centerz - 1; display(); break;
-		case '7': upx = upx - 1; display(); break;
-		case '8': upy = upy - 1; display(); break;
-		case '9': upz = upz - 1; display(); break;
-		case 'q': eyex = eyex + 1; display(); break;
-		case 'w': eyey = eyey + 1; display(); break;
-		case 'e': eyez = eyez + 1; display(); break;
-		case 'r': centerx = centerx + 1; display(); break;
-		case 't': centery = centery + 1; display(); break;
-		case 'y': centerz = centerz + 1; display(); break;
-		case 'u': upx = upx + 1; display(); break;
-		case 'i': upy = upy + 1; display(); break;
-		case 'o': upz = upz + 1; display(); break;
+		case 'm': printf("m\n");
+			if (view_mode == RUNNERS_EYES) view_mode = BEHING_RUNNERS_HEAD;
+			else view_mode = RUNNERS_EYES; break;
 	}
 }
 
 void keyboard_special(int key, int x, int y) {
 	switch (key) {
-		case GLUT_KEY_LEFT: eyey = eyey - 1; centery = centery - 1; display(); break;
-		case GLUT_KEY_RIGHT: eyey = eyey + 1; centery = centery + 1; display(); break;
-		case GLUT_KEY_UP: upz = upz + 1; display(); break;
-		case GLUT_KEY_DOWN: upz = upz - 1; display(); break;
+		case GLUT_KEY_LEFT: break;
+		case GLUT_KEY_RIGHT:  break;
+		case GLUT_KEY_UP: break;
+		case GLUT_KEY_DOWN: break;
 	}
 }
