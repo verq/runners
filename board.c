@@ -12,11 +12,15 @@
 #define RUNNERS_EYES		0
 #define BEHING_RUNNERS_HEAD	1
 
-
 int view_mode;
 int number_of_runner;
+int width, height;
+
 
 void display();
+void display_runners_view();
+void display_top_view();
+
 void reshape();
 void keyboard(unsigned char key, int x, int y);
 void keyboard_special(int key, int x, int y);
@@ -26,8 +30,7 @@ void draw_track(double value, int filled);
 
 int main(int argc, char **argv) {
 	init_runners();
-	
-	view_mode = RUNNERS_EYES;
+	view_mode = BEHING_RUNNERS_HEAD;
 	number_of_runner = 3;
 	
 	glutInit(&argc, argv);
@@ -93,20 +96,26 @@ void draw_board() {
 	}
 }
 
+void display_runners_view() {
 
-void display() {
-	glClear(GL_COLOR_BUFFER_BIT);
-	glMatrixMode(GL_MODELVIEW);
+	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
 
-	Man* looker = runners[number_of_runner];
+	glViewport(0, 0, width, height);
+	gluPerspective(100, 1.0, 1, 200);
+	glPopMatrix();
 
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	Man* looker = runners[number_of_runner];
+	
 	double angle;
 	if (looker -> turn_angle == 0) angle = 0;
 	else if (looker -> turn_angle == 180.0) angle = -PI;
 	else angle = -looker -> turn_angle * PI / 180.0;
-	
+
 	if (view_mode == RUNNERS_EYES) {
 		gluLookAt(looker -> head_x, looker -> head_y, looker -> head_z,
 			looker -> head_x + cos(angle),
@@ -114,55 +123,84 @@ void display() {
 			looker -> head_z + sin(angle),
 			0.0,  1.0,  0.0);
 	} else {
-		gluLookAt(looker -> head_x, looker -> head_y, looker -> head_z,
-			looker -> head_x + cos(angle),
-			looker -> head_y,
-			looker -> head_z + sin(angle),
-			0.0,  1.0,  0.0);
+		double behind_shift = 10.0;
+		if (looker -> running_phase == FORWARD) {
+			gluLookAt(looker -> head_x - behind_shift, looker -> head_y, looker -> head_z,
+				looker -> head_x + cos(angle),
+				looker -> head_y,
+				looker -> head_z + sin(angle),
+				0.0,  1.0,  0.0);
+		} else if (looker -> running_phase == FORWARD_TURN || looker -> running_phase == BACKWARD_TURN) {
+			gluLookAt(looker -> head_x - behind_shift * cos(angle), looker -> head_y, looker -> head_z - behind_shift * sin(angle),
+				looker -> head_x - cos(angle),
+				looker -> head_y,
+				looker -> head_z - sin(angle),
+				0.0,  1.0,  0.0);
+		} else if (looker -> running_phase == BACKWARD) {
+			gluLookAt(looker -> head_x + behind_shift, looker -> head_y, looker -> head_z,
+				looker -> head_x + cos(angle),
+				looker -> head_y,
+				looker -> head_z + sin(angle),
+				0.0,  1.0,  0.0);
+		}
 	}
-	
-	//gluLookAt(eyex, eyey, eyez, centerx, centery, centerz, upx, upy, upz);
-	//printf("%lf %lf %lf \t %lf %lf %lf \t %lf %lf %lf\n", eyex, eyey, eyez, centerx, centery, centerz, upx, upy, upz);
-
 	draw_board();
-
-	glBegin(GL_LINES);
-	glColor3f(0, 1, 0);
-	glVertex3f(0.0, 100.0, 0.0);
-	glVertex3f(0.0, -100.0, 0.0);
-	glEnd();
-
-	glBegin(GL_LINES);
-	glColor3f(1, 0, 0);
-	glVertex3f(100.0, 0.0, 0.0);
-	glVertex3f(-100.0, 0.0, 0.0);
-	glEnd();
-
-	glBegin(GL_LINES);
-	glColor3f(0, 0, 1);
-	glVertex3f(0.0, 0.0, 100.0);
-	glVertex3f(0.0, 0.0, -100.0);
-	glEnd();
 
 	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
 		if (runners[i] -> tree_root != NULL) draw_runner(runners[i]);
 	}
-
 	glPopMatrix();
 
+}
+
+void display_top_view() {
+	glMatrixMode(GL_PROJECTION);
+
+	glPushMatrix();
+
+	glLoadIdentity();
+
+	glViewport(1 * width / 3, 1 * height / 4, width, height);
+	gluPerspective(100, 1.0, 1, 300.0);
+	glPopMatrix();
+
+
+	glMatrixMode(GL_MODELVIEW);
+
+	glPushMatrix();
+	glLoadIdentity();
+	gluLookAt(-50, 250, -70, -50, 0, -70, 0, 0, 1);
+	draw_board();
+
+	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
+		if (runners[i] -> tree_root != NULL) draw_runner(runners[i]);
+	}
+	
+	glPopMatrix();
+}
+
+
+void display() {
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	display_runners_view();
+	display_top_view();
 	glFlush();
-	glutSwapBuffers();	
+	glutSwapBuffers();
+
 }
 
 void reshape(int w, int h) {
-	glPopMatrix();
-	glViewport(0, 0, w, h);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-
-	gluPerspective(100, 1.0, 1, 200);
-
+	width = w;
+	height = h;
 	glPushMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glViewport(0, 0, w, h);
+	glLoadIdentity();
+	gluPerspective(100, 1.0, 1, 300);
+	glPopMatrix();
+
+	glMatrixMode(GL_MODELVIEW);
 }
 
 void keyboard(unsigned char key, int x, int y) {
