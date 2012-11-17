@@ -5,10 +5,27 @@
 #include <time.h>
 #include "man.h"
 
+#define NUMBER_OF_CHILDREN 	3
+#define NUMBER_OF_BONES 	15
+
+#define HEAD 			0
+#define BACK 			1
+#define LEG_LEFT 		2
+#define ANKLE_LEFT		3
+#define FOOT_LEFT		4
+#define TOES_LEFT		5
+#define LEG_RIGHT		6
+#define ANKLE_RIGHT		7
+#define FOOT_RIGHT		8
+#define TOES_RIGHT		9
+#define ARM_LEFT		10
+#define FOREARM_LEFT		11
+#define ARM_RIGHT		12
+#define FOREARM_RIGHT		13
+
 /* MAIN FUNCTIONS */
-void start_runners();
+void set_runners_on_start_position();
 void init_runners();
-void running();
 
 /* MOVING PHASES */
 void forward(Man* runner);
@@ -19,7 +36,7 @@ void change_runner_position(Man* runner, double coord_x, double coord_y, double 
 
 /* RUNNERS MOVING */
 void walking();
-void calculate_angles(int velocity, Bone* root);
+void calculate_angles(double velocity, Bone* root);
 void init_tree(Man* runner);
 Bone* bone_add_child(Bone* root, double min_angle, double max_angle, double length, double depth);
 void swap_min_max(Bone* root);
@@ -32,17 +49,13 @@ void draw_bone(Bone* root);
 void free_bones(Bone* root);
 void free_runners();
 
-/* WRITING TREE */
-void write_bone(Bone* b);
-void write_tree(Bone* root);
-
 
 /* MAIN FUNCTIONS */
-void start_runners() {
+void set_runners_on_start_position() {
 	if (runners == NULL) init_runners();
-	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
-		runners[i] -> speed = 10.0;
-		runners[i] -> velocity =  FRAME_EVERY_MILLISECONDS / runners[i] -> speed;
+	for (int i = 0; i < NUMBER_OF_RUNERS; i++) {
+		
+		runners[i] -> velocity = 1.0 / (rand() % 100 + 1);
 		runners[i] -> number = i;
 		runners[i] -> running_phase = FORWARD;
 		runners[i] -> turn_angle = 0.0;
@@ -51,8 +64,8 @@ void start_runners() {
 	int shift = 5.0;
 	int track = 37.0;
 	int end_of_track = 37.0;
-	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
-		change_runner_position(runners[i], track - shift - 2.0, 8.0, track, 0.0);
+	for (int i = 0; i < NUMBER_OF_RUNERS; i++) {
+		change_runner_position(runners[i], track - shift - 2.0 - 35.0, 8.0, track, 0.0);
 		runners[i] -> turn_radius = track;
 		for (int j = 0; j < PHASES; j++) {
 			if (j == BACKWARD || j ==  FORWARD_TURN) runners[i] -> phases[j] = -end_of_track;
@@ -64,32 +77,17 @@ void start_runners() {
 }
 
 void init_runners() {
-	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
+	srand(time(NULL));
+	for (int i = 0; i < NUMBER_OF_RUNERS; i++) {
 		runners[i] = (Man*)malloc(sizeof(Man));
 	}
 
-	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
+	for (int i = 0; i < NUMBER_OF_RUNERS; i++) {
 		init_tree(runners[i]);
 	}
-
-}
-
-void running() {
-	if (game_mode == START) {
-		walking();
-		for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
-			if (runners[i] -> running_phase == FORWARD) forward(runners[i]);
-			else if (runners[i] -> running_phase == FORWARD_TURN) forward_turn(runners[i]);
-			else if (runners[i] -> running_phase == BACKWARD) backward(runners[i]);
-			else if (runners[i] -> running_phase == BACKWARD_TURN) backward_turn(runners[i]);
-		}
-	}
-	glutPostRedisplay();
-	glutTimerFunc(FRAME_EVERY_MILLISECONDS, running, 0);
 }
 
 /* MOVING PHASES */
-
 void forward(Man* runner) {
 	runner -> turn_angle = 0.0;
 	if (runner -> head_x < runner -> phases[FORWARD]) {
@@ -155,12 +153,12 @@ void change_runner_position(Man* runner, double coord_x, double coord_y, double 
 /* RUNNERS MOVES */
 
 void walking() {
-	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
-		calculate_angles(runners[i] -> velocity * FRAME_EVERY_MILLISECONDS, runners[i] -> tree_root);
+	for (int i = 0; i < NUMBER_OF_RUNERS; i++) {
+		calculate_angles(FRAME_ON_MILLISECONDS / runners[i] -> velocity, runners[i] -> tree_root);
 	}
 }
 
-void calculate_angles(int velocity, Bone* root) {
+void calculate_angles(double velocity, Bone* root) {
 	if (root -> max_angle - root -> min_angle != 0) {
 
 		double temp = (abs(root -> max_angle) + abs(root -> min_angle)) / velocity;
@@ -215,7 +213,7 @@ Bone* bone_add_child(Bone* root, double min_angle, double max_angle, double leng
 	if (root == NULL) {
 		root = (Bone*)malloc(sizeof(Bone));
 		root -> parent = NULL;
-	} else if (root -> number_of_children < MAX_NUMBER_OF_CHILDREN) {
+	} else if (root -> number_of_children < NUMBER_OF_CHILDREN) {
 		Bone* temp;
 		temp = (Bone*)malloc(sizeof(Bone));
 		temp -> parent = root;
@@ -239,7 +237,7 @@ Bone* bone_add_child(Bone* root, double min_angle, double max_angle, double leng
 	
 	swap_min_max(root);
 
-	for (int i = 0; i < MAX_NUMBER_OF_CHILDREN; i++) {
+	for (int i = 0; i < NUMBER_OF_CHILDREN; i++) {
 		root -> child[i] = NULL;
 	}
 	return root;
@@ -265,7 +263,7 @@ void draw_runner(Man* runner) {
 	glRotatef(runner -> turn_angle, 0.0, 1.0, 0.0);
 	glTranslatef(0.0, runner -> head_y + runner -> head_radius, 0.0);
 
-	if (runner -> number == number_of_runner) glColor3f(0, 0, 1);
+	if (runner -> number == chosen_runner) glColor3f(0, 0, 1);
 	else glColor3f(1, 1, 1);
 
 	glutSolidSphere(runner -> head_radius, 100, 100);
@@ -307,24 +305,7 @@ void free_bones(Bone* root) {
 }
 
 void free_runners() {
-	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
+	for (int i = 0; i < NUMBER_OF_RUNERS; i++) {
 		free_bones(runners[i] -> bones[HEAD]);
 	}
 }
-
-/* WRITING TREE */
-void write_bone(Bone* b) {
-	printf(" x: %lf y: %lf z: %lf angle: %lf length: %lf children: %d\n", b -> coord_x, b -> coord_y, b -> coord_z, b -> angle, b -> length, b -> number_of_children);
-}
-
-void write_tree(Bone* root) {
-	if (root == NULL) {
-		printf("Tree is empty!\n");
-		return;
-	} else {
-		write_bone(root);
-		for (int i = 0; i < root -> number_of_children; i++)
- 		write_tree(root -> child[i]);
-	}
-}
-

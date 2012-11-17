@@ -14,12 +14,14 @@
 
 int view_mode;
 int width, height;
+double start_position = 35.0;
 
 /* DRAWING BOARD */
 void draw_board_and_runners();
 void draw_board();
 void draw_track(double value, int filled);
 void draw_start_position(double shift, double value);
+void draw_stop_position(double shift, double value);
 
 /* DISPLAY */
 void display();
@@ -32,10 +34,15 @@ void setViewport(int bottom_left_x, int bottom_left_y, int w, int h);
 void keyboard(unsigned char key, int x, int y);
 void keyboard_special(int key, int x, int y);
 
+/* GAME LOGIC */
+void runner_speed_up();
+int end_game();
+void running();
+
 int main(int argc, char **argv) {
-	number_of_runner = 3;	
+	chosen_runner = 3;
 	init_runners();
-	start_runners();
+	set_runners_on_start_position();
 	
 	view_mode = BEHING_RUNNERS_HEAD;
 	game_mode = STOP;
@@ -49,6 +56,7 @@ int main(int argc, char **argv) {
 	glutKeyboardFunc(keyboard);
 	glutSpecialFunc(keyboard_special);
 
+	end_game();
 	running();
 
 	glutMainLoop();
@@ -61,22 +69,25 @@ int main(int argc, char **argv) {
 void draw_board_and_runners() {
 	draw_board();
 
-	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
+	for (int i = 0; i < NUMBER_OF_RUNERS; i++) {
 		if (runners[i] -> tree_root != NULL) draw_runner(runners[i]);
 	}
 }
 
 void draw_board() {
-	double value = 35.0;
+	double value = start_position;
 	double shift = 5.0;
+
 	
-	draw_track(value + MAX_NUMBER_OF_RUNERS * shift, ORANGE);
+	draw_track(value + NUMBER_OF_RUNERS * shift, ORANGE);
 	draw_track(value, GREEN);
-	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
+
+	for (int i = 0; i < NUMBER_OF_RUNERS; i++) {
 		draw_track(value, UNFILLED);
 		draw_start_position(shift, value);
 		value = value + shift;
 	}
+	draw_stop_position(shift * NUMBER_OF_RUNERS, start_position);
 }
 
 void draw_track(double value, int filled) {
@@ -120,10 +131,18 @@ void draw_start_position(double shift, double value) {
 	glBegin(GL_LINES);
 	glColor3f(1, 0, 0);
 
-	glVertex3f(value, 0, value);
-	glVertex3f(value, 0, value + shift);
+	glVertex3f(value - start_position, 0, value);
+	glVertex3f(value - start_position, 0, value + shift);
 
 	glEnd();
+}
+void draw_stop_position(double shift, double value) {
+	glBegin(GL_LINES);
+	glColor3f(1, 0, 1);
+
+	glVertex3f(value - shift, 0, value);
+	glVertex3f(value - shift, 0, value + shift);
+	glEnd();	
 }
 
 /* DISPLAY*/
@@ -167,7 +186,7 @@ void display_runners_view() {
 	glPushMatrix();
 	glLoadIdentity();
 
-	Man* looker = runners[number_of_runner];
+	Man* looker = runners[chosen_runner];
 
 	double angle;
 	if (looker -> turn_angle == 0) angle = 0;
@@ -213,26 +232,65 @@ void keyboard(unsigned char key, int x, int y) {
 			else view_mode = RUNNERS_EYES; break;
 		case 'n':
 			if (game_mode == STOP) game_mode = START; else game_mode = STOP;
-			start_runners();
+			set_runners_on_start_position();
 			break;
+		case 's': game_mode = START; set_runners_on_start_position(); break;
 		case 'p': if (game_mode == PAUSE) game_mode = START; else game_mode = PAUSE; break;
-		case '1': if (game_mode == STOP) number_of_runner = 0; break;
-		case '2': if (game_mode == STOP) number_of_runner = 1; break;
-		case '3': if (game_mode == STOP) number_of_runner = 2; break;
-		case '4': if (game_mode == STOP) number_of_runner = 3; break;
-		case '5': if (game_mode == STOP) number_of_runner = 4; break;
-		case '6': if (game_mode == STOP) number_of_runner = 5; break;
-		case '7': if (game_mode == STOP) number_of_runner = 6; break;
-		case '8': if (game_mode == STOP) number_of_runner = 7; break;
+		case '1': if (game_mode == STOP) chosen_runner = 0; break;
+		case '2': if (game_mode == STOP) chosen_runner = 1; break;
+		case '3': if (game_mode == STOP) chosen_runner = 2; break;
+		case '4': if (game_mode == STOP) chosen_runner = 3; break;
+		case '5': if (game_mode == STOP) chosen_runner = 4; break;
+		case '6': if (game_mode == STOP) chosen_runner = 5; break;
+		case '7': if (game_mode == STOP) chosen_runner = 6; break;
+		case '8': if (game_mode == STOP) chosen_runner = 7; break;
 		
 	}
 }
 
 void keyboard_special(int key, int x, int y) {
 	switch (key) {
-		case GLUT_KEY_LEFT:  break;
-		case GLUT_KEY_RIGHT:  break;
+		case GLUT_KEY_LEFT: runner_speed_up(); break;
+		case GLUT_KEY_RIGHT: runner_speed_up(); printf("%lf %lf %lf \n", runners[chosen_runner] -> head_x, runners[chosen_runner] -> head_y, runners[chosen_runner] -> head_z); break;
 		case GLUT_KEY_UP: break;
 		case GLUT_KEY_DOWN: break;
 	}
+}
+
+/* GAME LOGIC */
+void runner_speed_up() {
+	if (runners[chosen_runner] -> velocity < 1.0) {
+		runners[chosen_runner] -> velocity = runners[chosen_runner] -> velocity + 0.01;
+	}
+	int random_runner = rand() % 8;
+	while (random_runner == chosen_runner) random_runner = rand() % 8;
+
+	double random_velocity = 1.0 / ((rand() % 10) * 10.0 + 1.0);
+	if (runners[random_runner] -> velocity + random_velocity < 1.0) {
+		runners[random_runner] -> velocity = runners[random_runner] -> velocity + random_velocity;
+	}
+}
+
+void running() {
+	end_game();
+		printf("game mode %d \n", game_mode);
+	if (game_mode == START) {
+		walking();
+		if (runners[chosen_runner] -> velocity > 0.001) runners[chosen_runner] -> velocity -= 0.001;
+		for (int i = 0; i < NUMBER_OF_RUNERS; i++) {
+			if (runners[i] -> running_phase == FORWARD) forward(runners[i]);
+			else if (runners[i] -> running_phase == FORWARD_TURN) forward_turn(runners[i]);
+			else if (runners[i] -> running_phase == BACKWARD) backward(runners[i]);
+			else if (runners[i] -> running_phase == BACKWARD_TURN) backward_turn(runners[i]);
+		}
+	}
+	glutPostRedisplay();
+	glutTimerFunc(FRAME_ON_MILLISECONDS, running, 0);
+}
+
+int end_game() {
+	for (int i = 0; i < NUMBER_OF_RUNERS; i++) {
+		if (runners[i] -> head_z > start_position) return END;
+	}
+	return START;
 }
