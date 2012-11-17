@@ -16,22 +16,30 @@ int view_mode;
 int number_of_runner;
 int width, height;
 
+/* DRAWING BOARD */
+void draw_board_and_runners();
+void draw_board();
+void draw_track(double value, int filled);
+void draw_start_position(double shift, double value);
 
+/* DISPLAY */
 void display();
+void reshape();
 void display_runners_view();
 void display_top_view();
+void setViewport(int bottom_left_x, int bottom_left_y, int w, int h);
 
-void reshape();
+/* KEYBOARD */
 void keyboard(unsigned char key, int x, int y);
 void keyboard_special(int key, int x, int y);
 
-void draw_board();
-void draw_track(double value, int filled);
-
 int main(int argc, char **argv) {
 	init_runners();
+	start_runners();
+	
 	view_mode = BEHING_RUNNERS_HEAD;
 	number_of_runner = 3;
+	game_mode = STOP;
 	
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
@@ -43,10 +51,33 @@ int main(int argc, char **argv) {
 	glutSpecialFunc(keyboard_special);
 
 	running();
-	glutMainLoop();
 
+	glutMainLoop();
+	
 	free_runners();
  	return 0;
+}
+
+/* DRAWING BOARD */
+void draw_board_and_runners() {
+	draw_board();
+
+	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
+		if (runners[i] -> tree_root != NULL) draw_runner(runners[i]);
+	}
+}
+
+void draw_board() {
+	double value = 35.0;
+	double shift = 5.0;
+	
+	draw_track(value + MAX_NUMBER_OF_RUNERS * shift, ORANGE);
+	draw_track(value, GREEN);
+	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
+		draw_track(value, UNFILLED);
+		draw_start_position(shift, value);
+		value = value + shift;
+	}
 }
 
 void draw_track(double value, int filled) {
@@ -54,7 +85,7 @@ void draw_track(double value, int filled) {
 	double angle, x, z;
 
 	if (filled == UNFILLED) {
-		glBegin(GL_LINE_LOOP);		
+		glBegin(GL_LINE_LOOP);
 		glColor3f(0.5, 0.5, 0.5);
 	} else {
 		glBegin(GL_POLYGON);
@@ -82,42 +113,42 @@ void draw_track(double value, int filled) {
  		glVertex3f(x + value, 0, z);
  	}
   	glEnd();
+
+
 }
 
-void draw_board() {
-	double value = 75;
-	double shift = 5;
-	
-	draw_track(value, ORANGE);
-	draw_track(value - MAX_NUMBER_OF_RUNERS * shift, GREEN);
-	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
-		draw_track(value, UNFILLED);
-		value = value - shift;
-	}
+void draw_start_position(double shift, double value) {
+	glBegin(GL_LINES);
+	glColor3f(1, 0, 0);
+
+	glVertex3f(value, 0, value);
+	glVertex3f(value, 0, value + shift);
+
+	glEnd();
 }
 
+/* DISPLAY*/
+void display() {
+	glClear(GL_COLOR_BUFFER_BIT);
 
-void setViewport(int bottom_left_x, int bottom_left_y, int w, int h) {
-	glMatrixMode(GL_PROJECTION);
+	display_runners_view();
+	display_top_view();
+	glFlush();
+	glutSwapBuffers();
 
+}
+
+void reshape(int w, int h) {
+	width = w;
+	height = h;
 	glPushMatrix();
-
+	glMatrixMode(GL_PROJECTION);
+	glViewport(0, 0, w, h);
 	glLoadIdentity();
-
-	glViewport(bottom_left_x, bottom_left_y, w, h);
-	gluPerspective(100, 1.0, 1, 300.0);
+	gluPerspective(100, 1.0, 1, 300);
 	glPopMatrix();
 
 	glMatrixMode(GL_MODELVIEW);
-}
-
-void draw_board_and_runners() {
-	draw_board();
-
-	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
-		if (runners[i] -> tree_root != NULL) draw_runner(runners[i]);
-	}
-	
 }
 
 void display_top_view() {
@@ -126,7 +157,8 @@ void display_top_view() {
 	glPushMatrix();
 	glLoadIdentity();
 	gluLookAt(-50, 250, -70, -50, 0, -70, 0, 0, 1);
-	draw_board_and_runners() ;
+	draw_board_and_runners();
+
 	glPopMatrix();
 }
 
@@ -159,37 +191,32 @@ void display_runners_view() {
 	glPopMatrix();
 }
 
-
-
-void display() {
-	glClear(GL_COLOR_BUFFER_BIT);
-
-	display_runners_view();
-	display_top_view();
-	glFlush();
-	glutSwapBuffers();
-
-}
-
-void reshape(int w, int h) {
-	width = w;
-	height = h;
-	glPushMatrix();
+void setViewport(int bottom_left_x, int bottom_left_y, int w, int h) {
 	glMatrixMode(GL_PROJECTION);
-	glViewport(0, 0, w, h);
+
+	glPushMatrix();
+
 	glLoadIdentity();
-	gluPerspective(100, 1.0, 1, 300);
+
+	glViewport(bottom_left_x, bottom_left_y, w, h);
+	gluPerspective(100, 1.0, 1, 300.0);
 	glPopMatrix();
 
 	glMatrixMode(GL_MODELVIEW);
 }
 
+/* KEYBOARD */
 void keyboard(unsigned char key, int x, int y) {
 	switch (key) {
 		case 27: exit(0); break;
-		case 'm': printf("m\n");
+		case 'm':
 			if (view_mode == RUNNERS_EYES) view_mode = BEHING_RUNNERS_HEAD;
 			else view_mode = RUNNERS_EYES; break;
+		case 'n':
+			if (game_mode == STOP) game_mode = START; else game_mode = STOP;
+			start_runners();
+			break;
+		case 'p': if (game_mode == PAUSE) game_mode = START; else game_mode = PAUSE; break;
 	}
 }
 
