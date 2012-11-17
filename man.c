@@ -5,9 +5,6 @@
 #include <time.h>
 #include "man.h"
 
-#define NUMBER_OF_CHILDREN 	3
-#define NUMBER_OF_BONES 	15
-
 #define HEAD 			0
 #define BACK 			1
 #define LEG_LEFT 		2
@@ -52,6 +49,7 @@ void free_runners();
 
 /* MAIN FUNCTIONS */
 void set_runners_on_start_position() {
+	start_shift = 12.0;
 	if (runners == NULL) init_runners();
 	for (int i = 0; i < NUMBER_OF_RUNERS; i++) {
 		
@@ -65,7 +63,7 @@ void set_runners_on_start_position() {
 	int track = 37.0;
 	int end_of_track = 37.0;
 	for (int i = 0; i < NUMBER_OF_RUNERS; i++) {
-		change_runner_position(runners[i], track - shift - 2.0 - 35.0, 8.0, track, 0.0);
+		change_runner_position(runners[i], start_shift * i - shift + 1.0, 8.0, track, 0.0);
 		runners[i] -> turn_radius = track;
 		for (int j = 0; j < PHASES; j++) {
 			if (j == BACKWARD || j ==  FORWARD_TURN) runners[i] -> phases[j] = -end_of_track;
@@ -263,7 +261,7 @@ void draw_runner(Man* runner) {
 	glRotatef(runner -> turn_angle, 0.0, 1.0, 0.0);
 	glTranslatef(0.0, runner -> head_y + runner -> head_radius, 0.0);
 
-	if (runner -> number == chosen_runner) glColor3f(0, 0, 1);
+	if (runner -> number == chosen_runner) glColor3f(0, 1, 0);
 	else glColor3f(1, 1, 1);
 
 	glutSolidSphere(runner -> head_radius, 100, 100);

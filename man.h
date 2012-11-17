@@ -1,5 +1,5 @@
-#ifndef MAN_H
-#define MAN_H
+#ifndef MAN_L
+#define MAN_L
 
 #define PI 			3.1415926535897
 
@@ -42,6 +42,7 @@ typedef struct Man_t {
 Man* runners[NUMBER_OF_RUNERS];
 int game_mode;
 int chosen_runner;
+double start_shift;
 
 void init_runners();
 void set_runners_on_start_position();
