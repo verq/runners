@@ -13,7 +13,6 @@
 #define BEHING_RUNNERS_HEAD	1
 
 int view_mode;
-int number_of_runner;
 int width, height;
 
 /* DRAWING BOARD */
@@ -34,11 +33,11 @@ void keyboard(unsigned char key, int x, int y);
 void keyboard_special(int key, int x, int y);
 
 int main(int argc, char **argv) {
+	number_of_runner = 3;	
 	init_runners();
 	start_runners();
 	
 	view_mode = BEHING_RUNNERS_HEAD;
-	number_of_runner = 3;
 	game_mode = STOP;
 	
 	glutInit(&argc, argv);
@@ -217,12 +216,21 @@ void keyboard(unsigned char key, int x, int y) {
 			start_runners();
 			break;
 		case 'p': if (game_mode == PAUSE) game_mode = START; else game_mode = PAUSE; break;
+		case '1': if (game_mode == STOP) number_of_runner = 0; break;
+		case '2': if (game_mode == STOP) number_of_runner = 1; break;
+		case '3': if (game_mode == STOP) number_of_runner = 2; break;
+		case '4': if (game_mode == STOP) number_of_runner = 3; break;
+		case '5': if (game_mode == STOP) number_of_runner = 4; break;
+		case '6': if (game_mode == STOP) number_of_runner = 5; break;
+		case '7': if (game_mode == STOP) number_of_runner = 6; break;
+		case '8': if (game_mode == STOP) number_of_runner = 7; break;
+		
 	}
 }
 
 void keyboard_special(int key, int x, int y) {
 	switch (key) {
-		case GLUT_KEY_LEFT: break;
+		case GLUT_KEY_LEFT:  break;
 		case GLUT_KEY_RIGHT:  break;
 		case GLUT_KEY_UP: break;
 		case GLUT_KEY_DOWN: break;

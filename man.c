@@ -41,7 +41,8 @@ void write_tree(Bone* root);
 void start_runners() {
 	if (runners == NULL) init_runners();
 	for (int i = 0; i < MAX_NUMBER_OF_RUNERS; i++) {
-		runners[i] -> velocity =  FRAME_EVERY_MILLISECONDS / 17.0;
+		runners[i] -> speed = 10.0;
+		runners[i] -> velocity =  FRAME_EVERY_MILLISECONDS / runners[i] -> speed;
 		runners[i] -> number = i;
 		runners[i] -> running_phase = FORWARD;
 		runners[i] -> turn_angle = 0.0;
@@ -264,7 +265,9 @@ void draw_runner(Man* runner) {
 	glRotatef(runner -> turn_angle, 0.0, 1.0, 0.0);
 	glTranslatef(0.0, runner -> head_y + runner -> head_radius, 0.0);
 
-	glColor3f(1, 1, 1);
+	if (runner -> number == number_of_runner) glColor3f(0, 0, 1);
+	else glColor3f(1, 1, 1);
+
 	glutSolidSphere(runner -> head_radius, 100, 100);
 	glTranslatef(-runner -> head_x, -runner -> head_y - runner -> head_radius , -runner -> head_z);
 	
@@ -281,10 +284,8 @@ void draw_bone(Bone* root) {
 	glRotatef(root -> angle, 0.0, 0.0, 1.0);
 
 	glBegin(GL_LINES);
- 	glColor3f(1, 1, 1);
  	glVertex3f(0, 0, 0);
-
- 	glVertex3f(root -> length, 0.0, root -> depth);
+	glVertex3f(root -> length, 0.0, root -> depth);
 	glEnd();
 
  	glTranslatef(root -> length, 0.0, root -> depth);
