@@ -14,6 +14,7 @@
 
 
 int view_mode;
+int number_of_runner;
 
 void display();
 void reshape();
@@ -27,7 +28,8 @@ int main(int argc, char **argv) {
 	init_runners();
 	
 	view_mode = RUNNERS_EYES;
-
+	number_of_runner = 3;
+	
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
 	glutInitWindowSize(800, 600);
@@ -98,24 +100,24 @@ void display() {
 	glPushMatrix();
 	glLoadIdentity();
 
-	int number_of_runner = 3;
+	Man* looker = runners[number_of_runner];
 
 	double angle;
-	if (runners[number_of_runner] -> turn_angle == 0) angle = 0;
-	else if (runners[number_of_runner] -> turn_angle == 180.0) angle = -PI;
-	else angle = -runners[number_of_runner] -> turn_angle * PI / 180.0;
+	if (looker -> turn_angle == 0) angle = 0;
+	else if (looker -> turn_angle == 180.0) angle = -PI;
+	else angle = -looker -> turn_angle * PI / 180.0;
 	
 	if (view_mode == RUNNERS_EYES) {
-		gluLookAt(runners[number_of_runner] -> head_x, runners[number_of_runner] -> head_y, runners[number_of_runner] -> head_z,
-			runners[number_of_runner] -> head_x + cos(angle),
-			runners[number_of_runner] -> head_y,
-			runners[number_of_runner] -> head_z + sin(angle),
+		gluLookAt(looker -> head_x, looker -> head_y, looker -> head_z,
+			looker -> head_x + cos(angle),
+			looker -> head_y,
+			looker -> head_z + sin(angle),
 			0.0,  1.0,  0.0);
 	} else {
-		gluLookAt(runners[number_of_runner] -> head_x, runners[number_of_runner] -> head_y, runners[number_of_runner] -> head_z,
-			runners[number_of_runner] -> head_x + cos(angle),
-			runners[number_of_runner] -> head_y,
-			runners[number_of_runner] -> head_z + sin(angle),
+		gluLookAt(looker -> head_x, looker -> head_y, looker -> head_z,
+			looker -> head_x + cos(angle),
+			looker -> head_y,
+			looker -> head_z + sin(angle),
 			0.0,  1.0,  0.0);
 	}
 	
