@@ -137,6 +137,7 @@ void display() {
 			runners[number_of_runner] -> head_z + sin(angle),
 			0.0,  1.0,  0.0);
 	}
+	
 	//gluLookAt(eyex, eyey, eyez, centerx, centery, centerz, upx, upy, upz);
 	//printf("%lf %lf %lf \t %lf %lf %lf \t %lf %lf %lf\n", eyex, eyey, eyez, centerx, centery, centerz, upx, upy, upz);
 
