@@ -112,8 +112,10 @@ void display() {
 	glPopMatrix();
 	
 	glLoadIdentity();
-	gluLookAt(eyex, eyey, eyez, centerx, centery, centerz, upx, upy, upz);
-
+	//gluLookAt(eyex, eyey, eyez, centerx, centery, centerz, upx, upy, upz);
+	//gluLookAt(eyex, eyey, eyez, runners[3] -> head_x, runners[3] -> head_y, runners[3] -> head_z, upx, upy, upz);
+	gluLookAt(runners[3] -> head_x, runners[3] -> head_y, runners[3] -> head_z, centerx, centery, centerz, upz, upy, upz);
+	
 	printf("%lf %lf %lf \t %lf %lf %lf \t %lf %lf %lf\n", eyex, eyey, eyez, centerx, centery, centerz, upx, upy, upz);
 	draw_board();
 
@@ -154,7 +156,7 @@ void reshape(int w, int h) {
 	if (w == 0) w = 1;
 	if (h == 0) h = 1;
 
-	double d = 180.0;
+	double d = 20.0;
 	glOrtho( -d/2, d/2,-d/2, d/2, -d*2, d*2);
 	//if (w < h) glFrustum(-1.0, 1.0, -1.0 * h / w, 1.0 * h / w, 1.0, 2.0);
 	//else glFrustum(-1.0 * w / h, 1.0 * w / h, -1.0, 1.0, 1.0, 2.0);
