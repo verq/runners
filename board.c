@@ -78,6 +78,15 @@ void draw_board_and_runners() {
 	}
 }
 
+void draw_stop_position(double shift, double value) {
+	glBegin(GL_LINES);
+	glColor3f(1, 0, 1);
+
+	glVertex3f(stop_position, 0, value);
+	glVertex3f(stop_position, 0, value + shift);
+	glEnd();
+}
+
 void draw_board() {
 	double value = start_position;
 	double wid = 5.0;
@@ -137,23 +146,15 @@ void draw_start_position(double wid, double value, double shift) {
 
 	glEnd();
 }
-void draw_stop_position(double shift, double value) {
-	glBegin(GL_LINES);
-	glColor3f(1, 0, 1);
 
-	glVertex3f(stop_position, 0, value);
-	glVertex3f(stop_position, 0, value + shift);
-	glEnd();
-}
-
-/* DISPLAY*/
+/* DISPLAY */
 void display() {
 	glClear(GL_COLOR_BUFFER_BIT);
 
- 	display_runners_view();
+	display_runners_view();
  	display_top_view();
-
- 	glFlush();
+	
+	glFlush();
  	glutSwapBuffers();
 }
 
