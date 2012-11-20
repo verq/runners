@@ -267,7 +267,7 @@ void runner_speed_up() {
 	int random_runner = rand() % 8;
 	while (random_runner == chosen_runner) random_runner = rand() % 8;
 
-	double random_velocity = 1.0 / ((rand() % 10) * 10.0 + 1.0);
+	double random_velocity = 1.0 / ((rand() % 5) * 10.0 + 1.0);
 	if (runners[random_runner] -> velocity + random_velocity < 1.0) {
 		runners[random_runner] -> velocity = runners[random_runner] -> velocity + random_velocity;
 	}

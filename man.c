@@ -53,7 +53,7 @@ void set_runners_on_start_position() {
 	if (runners == NULL) init_runners();
 	for (int i = 0; i < NUMBER_OF_RUNERS; i++) {
 		
-		runners[i] -> velocity = 1.0 / (rand() % 100 + 1);
+		runners[i] -> velocity = 1.0 / (rand() % 50 + 1);
 		runners[i] -> number = i;
 		runners[i] -> running_phase = FORWARD;
 		runners[i] -> turn_angle = 0.0;
